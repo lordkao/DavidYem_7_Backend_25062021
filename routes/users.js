@@ -1,7 +1,9 @@
 const express = require('express')
 const router = express.Router()
-
 const mysql = require('mysql2')
+
+/*Création de la fonction de connection*/
+/*************************************************/
 
 function dbConnect(){
     const connection = mysql.createConnection({
@@ -12,12 +14,8 @@ function dbConnect(){
     })  
     return connection
 }
-
-/*************************************************/
-/*Création de la fonction de connection*/
-
-
-router.post('/',(req,res,next) =>{
+/*création de compte*/
+router.post('/signup',(req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
     const email = req.body.email
@@ -32,4 +30,8 @@ router.post('/',(req,res,next) =>{
     }
 })
 
+/*Connexion*/
+router.post('/login',(req,res,next) => {
+
+})
 module.exports = router
