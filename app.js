@@ -25,8 +25,8 @@ app.use(express.json())
 /*Paramétrage des routes*/
 /*************************************************/
 
-/*users*/
-app.use('/api/users',usersRoutes)
+/*Authentification du user*/
+app.use('/api/auth',usersRoutes)
 
 /*chat*/
 app.use('/api/chat',chatRoutes)

@@ -4,10 +4,9 @@ const userCtrl = require('../controllers/users')
 
 
 /*création de compte*/
-router.post('/signup',userCtrl.createUser)
+router.post('/signup',userCtrl.signup)
 
 /*Connexion*/
-router.post('/login',(req,res,next) => {
+router.post('/login',userCtrl.login)
 
-})
 module.exports = router
