@@ -40,24 +40,33 @@ exports.signup = (req,res,next) => {
         /*************************************************/
         bcrypt.hash(password,10)
         .then(hash => {
-            const test = [nom,prenom,email,hash,uniqueUserId()]
-            console.log(test)
-            console.log('mdp hashé : ' +hash)
+            const userId = uniqueUserId()
+            const infosUser = [nom,prenom,email,hash,userId]
+            /*console.log(infosUser)
+            console.log('mdp hashé : ' +hash)*/
 
             const db = dbConnect()
             /*Requête d'insertion vers la Database*/
             /*************************************************/
             db.query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',
-            test,
+            infosUser,
             function(err,data){
                 if(err){
-                    res.status(401).json(err)
+                    res.status(500).json(err)
                 }
                 else{
-                    console.log(data)
-                    res.status(201).json({ token:'lordkao'})
+                    /*console.log('2eme test : ' + userId*/
+                    res.status(201).json({ 
+                        userId:userId,
+                        token:jwt.sign(
+                            { userId:userId},
+                            'RANDOM_TOKEN_SECRET',
+                            { expiresIn: '24h'}
+                        )
+                    })
                 }
             })
+            db.end()
         })
         .catch( err => res.status(500).json({ err }))
 
@@ -100,5 +109,5 @@ exports.login = (req,res,next) => {
         }
         
     })
-    
+    db.end()
 }
