@@ -39,21 +39,15 @@ exports.signup = (req,res,next) => {
         /*************************************************/
         bcrypt.hash(password,10)
         .then(hash => {
-            const user = {
-                nom : nom,
-                prenom : prenom,
-                email : email,
-                password : hash,
-                userId : uniqueUserId()
-            }
-            console.log(user)
+            const test = [nom,prenom,email,hash,uniqueUserId()]
+            console.log(test)
             console.log('mdp hashé : ' +hash)
 
             const db = dbConnect()
             /*Requête d'insertion vers la Database*/
             /*************************************************/
             db.query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',
-            [user.nom,user.prenom,user.email,user.password,user.userId],
+            test,
             function(err,data){
                 if(err){
                     res.status(401).json(err)
