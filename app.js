@@ -4,8 +4,6 @@ const usersRoutes = require('./routes/users')
 const chatRoutes = require('./routes/chat')
 const publicationRoutes = require('./routes/publications')
 
-
-
 /*Paramétrage du CORS*/
 /*************************************************/
 
@@ -16,8 +14,6 @@ app.use((req,res,next) => {
     next()
 })
 
-
-
 /*Paramétrage de l'analyseur de corps*/
 /*************************************************/
 
@@ -26,18 +22,16 @@ app.use(express.urlencoded({
 }))
 app.use(express.json())
 
-
-
 /*Paramétrage des routes*/
 /*************************************************/
 
-/*users*/
-app.use('/users',usersRoutes)
+/*Authentification du user*/
+app.use('/api/auth',usersRoutes)
 
 /*chat*/
-app.use('/chat',chatRoutes)
+app.use('/api/chat',chatRoutes)
 
 /*publications*/
-app.use('/publications',publicationRoutes)
+app.use('/api/publications',publicationRoutes)
 
 module.exports = app
