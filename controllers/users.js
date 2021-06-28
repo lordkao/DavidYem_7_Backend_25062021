@@ -1,6 +1,7 @@
 const mysql = require('mysql2')
 const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
+const jwt = require('jsonwebtoken')
 
 
 /*Création de la fonction de connection*/
@@ -77,16 +78,22 @@ exports.login = (req,res,next) => {
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
         else if(results.length > 0){
+            const userIdResults = results[0].userId
+            const passwordResults = results[0].password
             console.log(results[0])
-            console.log(results[0].password)
-            bcrypt.compare(password,results[0].password)
+            console.log(passwordResults)
+            bcrypt.compare(password,passwordResults)
             .then(valid => {
                 if(!valid){
                     return res.status(401).json({ error: 'Mot de passe incorrect !'})
                 }
                 res.status(200).json({ 
-                    userId:results[0].userId,
-                    token:'lordkao'
+                    userId:userIdResults,
+                    token:jwt.sign(
+                        { userId:userIdResults},
+                        'RANDOM_TOKEN_SECRET',
+                        { expiresIn: '24h'}
+                    )
                 })
             })
             .catch( error => res.status(500).json({ error}))
