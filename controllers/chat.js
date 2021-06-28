@@ -21,9 +21,9 @@ exports.getAllMessagesChat = (req,res,next) => {
     .then((responses,fields) => {
         /*console.log(responses[0])*/
         const resultats = responses[0]
-        res.status(200).json(resultats)
+        return res.status(200).json(resultats)
     })
     .catch((err) => {
-        res.status(500).json(err)
+       return res.status(500).json(err)
     })
 }
