@@ -1,6 +1,7 @@
 const mysql = require('mysql2')
 const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
+const jwt = require('jsonwebtoken')
 
 
 /*Création de la fonction de connection*/
@@ -39,30 +40,33 @@ exports.signup = (req,res,next) => {
         /*************************************************/
         bcrypt.hash(password,10)
         .then(hash => {
-            const user = {
-                nom : nom,
-                prenom : prenom,
-                email : email,
-                password : hash,
-                userId : uniqueUserId()
-            }
-            console.log(user)
-            console.log('mdp hashé : ' +hash)
+            const userId = uniqueUserId()
+            const infosUser = [nom,prenom,email,hash,userId]
+            /*console.log(infosUser)
+            console.log('mdp hashé : ' +hash)*/
 
             const db = dbConnect()
             /*Requête d'insertion vers la Database*/
             /*************************************************/
             db.query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',
-            [user.nom,user.prenom,user.email,user.password,user.userId],
+            infosUser,
             function(err,data){
                 if(err){
-                    res.status(401).json(err)
+                    res.status(500).json(err)
                 }
                 else{
-                    console.log(data)
-                    res.status(201).json({ token:'lordkao'})
+                    /*console.log('2eme test : ' + userId*/
+                    res.status(201).json({ 
+                        userId:userId,
+                        token:jwt.sign(
+                            { userId:userId},
+                            'RANDOM_TOKEN_SECRET',
+                            { expiresIn: '24h'}
+                        )
+                    })
                 }
             })
+            db.end()
         })
         .catch( err => res.status(500).json({ err }))
 
@@ -83,21 +87,27 @@ exports.login = (req,res,next) => {
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
         else if(results.length > 0){
+            const userIdResults = results[0].userId
+            const passwordResults = results[0].password
             console.log(results[0])
-            console.log(results[0].password)
-            bcrypt.compare(password,results[0].password)
+            console.log(passwordResults)
+            bcrypt.compare(password,passwordResults)
             .then(valid => {
                 if(!valid){
                     return res.status(401).json({ error: 'Mot de passe incorrect !'})
                 }
                 res.status(200).json({ 
-                    userId:results[0].userId,
-                    token:'lordkao'
+                    userId:userIdResults,
+                    token:jwt.sign(
+                        { userId:userIdResults},
+                        'RANDOM_TOKEN_SECRET',
+                        { expiresIn: '24h'}
+                    )
                 })
             })
             .catch( error => res.status(500).json({ error}))
         }
         
     })
-    
+    db.end()
 }
