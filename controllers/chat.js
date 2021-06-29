@@ -16,7 +16,7 @@ function dbConnect(){
 exports.getAllMessagesChat = (req,res,next) => {
     const db = dbConnect()
 
-    db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'ISO\')) AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY Users.id')
+    db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'ISO\')) AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC')
 
     .then((responses,fields) => {
         /*console.log(responses[0])*/
@@ -27,4 +27,22 @@ exports.getAllMessagesChat = (req,res,next) => {
        return res.status(500).json(err)
     })
     .then(() => db.end())
+}
+exports.createMessageChat = (req,res,next) =>{
+    const date = new Date()
+    const message = req.body.message
+    const userId = req.body.userId
+
+    console.log(req.body)
+    const db = dbConnect()
+    const infosMessage = [userId,message,date]
+    db.promise().query('INSERT INTO chat(userId,message,date) VALUES(?,?,?)',infosMessage)
+    .then((response) => {
+        console.log(response[0])
+        res.status(201).json({ message:'confirmation de création !'})
+    })
+    .catch((err) => {
+        return res.status(500).json(err)
+     })
+     .then(() => db.end())
 }
