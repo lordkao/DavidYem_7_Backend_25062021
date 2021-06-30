@@ -2,6 +2,13 @@ const express = require('express')
 const router = express.Router()
 const auth = require('../middleware/auth')
 const publicationsCtrl = require('../controllers/publications')
+const multer = require('../middleware/multer-config')
+
+router.post('/',auth ,multer ,publicationsCtrl.createPublication)
+
+router.put('/:id',auth ,multer ,publicationsCtrl.updatePublication)
+
+router.delete('/:id',auth ,multer ,publicationsCtrl.deletePublication)
 
 router.get('/',auth ,publicationsCtrl.getAllPublications)
 

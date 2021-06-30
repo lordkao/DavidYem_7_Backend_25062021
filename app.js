@@ -3,6 +3,7 @@ const app = express()
 const usersRoutes = require('./routes/users')
 const chatRoutes = require('./routes/chat')
 const publicationRoutes = require('./routes/publications')
+const path = require('path')
 
 /*Paramétrage du CORS*/
 /*************************************************/
@@ -33,5 +34,8 @@ app.use('/api/chat',chatRoutes)
 
 /*publications*/
 app.use('/api/publications',publicationRoutes)
+
+/*Images*/
+app.use('/images',express.static(path.join(__dirname,'images')))
 
 module.exports = app
