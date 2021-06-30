@@ -48,24 +48,22 @@ exports.signup = (req,res,next) => {
             const db = dbConnect()
             /*Requête d'insertion vers la Database*/
             /*************************************************/
-            db.query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',
-            infosUser,
-            function(err,data){
-                if(err){
-                    res.status(500).json(err)
-                }
-                else{
-                    /*console.log('2eme test : ' + userId*/
-                    res.status(201).json({ 
-                        userId:userId,
-                        token:jwt.sign(
-                            { userId:userId},
-                            'RANDOM_TOKEN_SECRET',
-                            { expiresIn: '24h'}
-                        )
-                    })
-                }
+
+            db.promise().query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',infosUser)
+            .then((response) => {
+                console.log(response[0])
+                return res.status(201).json({ 
+                    userId:userId,
+                    token:jwt.sign(
+                        { userId:userId},
+                        'RANDOM_TOKEN_SECRET',
+                        { expiresIn: '24h'}
+                    )
+                })
             })
+            .catch((err) => {
+                return res.status(500).json(err)
+             })
             db.end()
         })
         .catch( err => res.status(500).json({ err }))
@@ -79,35 +77,34 @@ exports.login = (req,res,next) => {
     const password = req.body.password
     const data = [email]
     const db = dbConnect()
-    db.query('SELECT * FROM Users WHERE email=?',data,function(err,results){
-        if(err){
-            return res.status(401).json({ erreur:err})
-        }
-        else if(results.length == 0){
+
+    db.promise().query('SELECT * FROM Users WHERE email=?',data)
+    .then((response) => {
+        if(response.length == 0){
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
-        else if(results.length > 0){
-            const userIdResults = results[0].userId
-            const passwordResults = results[0].password
-            console.log(results[0])
-            console.log(passwordResults)
-            bcrypt.compare(password,passwordResults)
+        else if(response.length > 0){
+            const result = response[0]
+            const userIdResult = result[0].userId
+            const passwordResult = result[0].password
+            console.log(userIdResult)
+            console.log(passwordResult)
+            bcrypt.compare(password,passwordResult)
             .then(valid => {
                 if(!valid){
                     return res.status(401).json({ error: 'Mot de passe incorrect !'})
                 }
-                res.status(200).json({ 
-                    userId:userIdResults,
+                return res.status(200).json({ 
+                    userId:userIdResult,
                     token:jwt.sign(
-                        { userId:userIdResults},
+                        { userId:userIdResult},
                         'RANDOM_TOKEN_SECRET',
                         { expiresIn: '24h'}
                     )
                 })
             })
-            .catch( error => res.status(500).json({ error}))
         }
-        
     })
-    db.end()
+    .catch( err => {return res.status(500).json({ err })})
+    .then(() => db.end())
 }
