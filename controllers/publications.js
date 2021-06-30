@@ -43,16 +43,16 @@ exports.updatePublication = (req,res,next) => {
     const userId = req.body.userId
     const message = req.body.message
     const date = new Date()
-    const publication = ['26',userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]
+    const publication = [req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]
     const db = dbConnect()
     db.promise().query('UPDATE publications(userId,message,date,urlImage) WHERE id=? VALUES (?,?,?,?)',publication)
-    .then(() => { res.status(201).json({ message : 'Publication créée avec succès !'})})
+    .then(() => { res.status(201).json({ message : 'Publication modifiée avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
     .then(() => db.end())
 }
 exports.deletePublication = (req,res,next) => {
-    console.log(req.body)
-    const publication = ['26']
+    console.log(req.params.id)
+    const publication = [req.params.id]
     const db = dbConnect()
     db.promise().query('DELETE FROM publications WHERE id=? ',publication)
     .then(() => { res.status(200).json({ message : 'Publication supprimée avec succès !'})})
