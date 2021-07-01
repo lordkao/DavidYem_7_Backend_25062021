@@ -108,3 +108,54 @@ exports.login = (req,res,next) => {
     .catch( err => {return res.status(500).json({ err })})
     .then(() => db.end())
 }
+
+exports.update = (req,res,next) => {
+    const nom = req.body.nom
+    const prenom = req.body.prenom
+    const email = req.body.email
+    const userId = req.params.userId
+
+    const infosUser = req.file ? [nom,prenom,email,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,userId]: [nom,prenom,email,userId]
+
+    if(nom == '' || prenom == '' || email == '' || password == ''){
+        res.status(400).json({ erreur : 'il manque des informations !'})
+    }
+    else if(req.file){
+        const db = dbConnect()
+            /*Requête de modification vers la Database*/
+            /*************************************************/
+            db.promise().query('UPDATE users SET nom = ?,prenom = ?,email = ?,urlImage = ? WHERE userId = ?',infosUser)
+            .then((response) => {
+                console.log(response[0])
+                res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+            })
+            .catch((err) => {
+                return res.status(500).json(err)
+             })
+            db.end()
+    }
+    else{
+            const db = dbConnect()
+            /*Requête de modification vers la Database*/
+            /*************************************************/
+            db.promise().query('UPDATE users SET nom = ?,prenom = ?,email = ? WHERE userId = ?',infosUser)
+            .then((response) => {
+                console.log(response[0])
+                res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+            })
+            .catch((err) => {
+                return res.status(500).json(err)
+             })
+            db.end()
+        }
+}
+
+exports.delete = (req,res,next) => {
+    console.log(req.params.userId)
+    const userId = [req.params.userId]
+    const db = dbConnect()
+    db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
+    .then(() => { res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})})
+    .catch((err) => { res.status(500).json({ err })})
+    .then(() => db.end())
+}
