@@ -27,28 +27,57 @@ exports.getAllPublications = (req,res,next) => {
     .then(() => db.end())
 }
 exports.createPublication = (req,res,next) => {
-    console.log(req.file.filename)
+    console.log(req.body)
     const userId = req.body.userId
     const message = req.body.message
     const date = new Date()
-    const publication = [userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]
-    const db = dbConnect()
+    const publication = req.file ? [userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`] : [userId,message,date]
+    /*const db = dbConnect()
     db.promise().query('INSERT INTO publications(userId,message,date,urlImage) VALUES (?,?,?,?)',publication)
     .then(() => { res.status(201).json({ message : 'Publication créée avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
-    .then(() => db.end())
+    .then(() => db.end())*/
+    
+    if(req.file){
+        const db = dbConnect()
+        db.promise().query('INSERT INTO publications(userId,message,date,urlImage) VALUES (?,?,?,?)',publication)
+        .then(() => { res.status(201).json({ message : 'Publication créée avec succès !'})})
+        .catch((err) => { res.status(500).json({ err })})
+        .then(() => db.end())    
+    }
+    else{
+        const db = dbConnect()
+        db.promise().query('INSERT INTO publications(userId,message,date) VALUES (?,?,?)',publication)
+        .then(() => { res.status(201).json({ message : 'Publication créée avec succès !'})})
+        .catch((err) => { res.status(500).json({ err })})
+        .then(() => db.end())
+    }
 }
 exports.updatePublication = (req,res,next) => {
     console.log(req.body)
     const userId = req.body.userId
     const message = req.body.message
     const date = new Date()
-    const publication = [req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]
-    const db = dbConnect()
+    const publication = req.file ? [req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`] : [req.params.id,userId,message,date]
+    if(req.file){
+        const db = dbConnect()
+        db.promise().query('UPDATE publications(userId,message,date,urlImage) WHERE id=? VALUES (?,?,?,?)',publication)
+        .then(() => { res.status(201).json({ message : 'Publication modifiée avec succès !'})})
+        .catch((err) => { res.status(500).json({ err })})
+        .then(() => db.end())    
+    }
+    else{
+        const db = dbConnect()
+        db.promise().query('UPDATE publications(userId,message,date) WHERE id=? VALUES (?,?,?)',publication)
+        .then(() => { res.status(201).json({ message : 'Publication modifiée avec succès !'})})
+        .catch((err) => { res.status(500).json({ err })})
+        .then(() => db.end())
+    }
+    /*const db = dbConnect()
     db.promise().query('UPDATE publications(userId,message,date,urlImage) WHERE id=? VALUES (?,?,?,?)',publication)
     .then(() => { res.status(201).json({ message : 'Publication modifiée avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
-    .then(() => db.end())
+    .then(() => db.end())*/
 }
 exports.deletePublication = (req,res,next) => {
     console.log(req.params.id)
@@ -59,3 +88,4 @@ exports.deletePublication = (req,res,next) => {
     .catch((err) => { res.status(500).json({ err })})
     .then(() => db.end())
 }
+/*[req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]*/
