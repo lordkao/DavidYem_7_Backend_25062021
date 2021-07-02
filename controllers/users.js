@@ -127,18 +127,22 @@ exports.update = (req,res,next) => {
         db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
         .then((response) => {
             console.log(response[0])
-            res.status(200).json({message:'tout va bien !'})
-        })
+            const urlImage = response[0][0].urlImage
+            console.log(urlImage)
+            const filename = urlImage.split('/images/')[1]
+            fs.unlink(`images/${filename}`,() => {
+                db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
+                .then((response) => {
+                    console.log(response[0])
+                    res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+                })
+                .catch((err) => {
+                    return res.status(500).json(err)
+                    })
+                db.end()
+                    })
+                })
         .catch((err) => res.status(500).json(err))
-        /*db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
-        .then((response) => {
-            console.log(response[0])
-            res.status(200).json({ message: 'Modifications effectuées avec succès !'})
-        })
-        .catch((err) => {
-            return res.status(500).json(err)
-            })
-        db.end()*/
     }
     else{
             const db = dbConnect()
