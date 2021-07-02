@@ -80,6 +80,7 @@ exports.login = (req,res,next) => {
 
     db.promise().query('SELECT * FROM Users WHERE email=?',data)
     .then((response) => {
+        /*S'il n'y a pas de correspondance*/
         if(response.length == 0){
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
@@ -103,6 +104,7 @@ exports.login = (req,res,next) => {
                     )
                 })
             })
+            .catch((err) => res.status(500).json(err))
         }
     })
     .catch( err => {return res.status(500).json({ err })})
@@ -112,12 +114,11 @@ exports.login = (req,res,next) => {
 exports.update = (req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
-    const email = req.body.email
     const userId = req.params.userId
+    console.log(req.body)
+    const infosUser = req.file ? [nom,prenom,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,userId]: [nom,prenom,userId]
 
-    const infosUser = req.file ? [nom,prenom,email,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,userId]: [nom,prenom,email,userId]
-
-    if(nom == '' || prenom == '' || email == '' || password == ''){
+    if(nom == '' || prenom == ''){
         res.status(400).json({ erreur : 'il manque des informations !'})
     }
     else if(req.file){
@@ -138,7 +139,7 @@ exports.update = (req,res,next) => {
             const db = dbConnect()
             /*Requête de modification vers la Database*/
             /*************************************************/
-            db.promise().query('UPDATE users SET nom = ?,prenom = ?,email = ? WHERE userId = ?',infosUser)
+            db.promise().query('UPDATE users SET nom = ?,prenom = ? WHERE userId = ?',infosUser)
             .then((response) => {
                 console.log(response[0])
                 res.status(200).json({ message: 'Modifications effectuées avec succès !'})
@@ -147,7 +148,7 @@ exports.update = (req,res,next) => {
                 return res.status(500).json(err)
              })
             db.end()
-        }
+    }
 }
 
 exports.delete = (req,res,next) => {
@@ -157,5 +158,24 @@ exports.delete = (req,res,next) => {
     db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
     .then(() => { res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
+    .then(() => db.end())
+}
+
+exports.getInfosProfil = (req,res,next) => {
+    const userId = [req.params.userId]
+    const db = dbConnect()
+    db.promise().query('SELECT * FROM users WHERE userId=?',userId)
+    .then((results) => {
+        const resultats = results[0][0]
+        const dataToSend = {
+            nom: resultats.nom,
+            prenom: resultats.prenom,
+            email: resultats.email,
+            urlImage: resultats.urlImage
+        }
+        console.log(dataToSend)
+        return res.status(200).json(dataToSend)
+    })
+    .catch((err) => res.status(500).json(err))
     .then(() => db.end())
 }

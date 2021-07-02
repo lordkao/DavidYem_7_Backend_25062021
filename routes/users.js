@@ -17,4 +17,7 @@ router.put('/:userId',auth ,multer ,userCtrl.update)
 /*Suppression*/
 router.delete('/:userId',auth ,userCtrl.delete)
 
+/*Obtenir les infos user en validant le userId*/
+router.get('/:userId',auth ,userCtrl.getInfosProfil)
+
 module.exports = router

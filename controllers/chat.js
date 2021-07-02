@@ -16,7 +16,7 @@ function dbConnect(){
 exports.getAllMessagesChat = (req,res,next) => {
     const db = dbConnect()
 
-    db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'ISO\')) AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC')
+    db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'ISO\')) AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10')
 
     .then((responses,fields) => {
         /*console.log(responses[0])*/
