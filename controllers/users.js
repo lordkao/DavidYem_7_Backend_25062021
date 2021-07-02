@@ -1,20 +1,8 @@
-const mysql = require('mysql2')
 const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
-
-/*Création de la fonction de connection*/
-/*************************************************/
-function dbConnect(){
-    const connection = mysql.createConnection({
-    host : 'localhost',
-    user : 'groupomania',
-    password : 'client',
-    database : 'groupomania'
-    })  
-    return connection
-}
+const database = require('../app.js')
 
 exports.signup = (req,res,next) => {
     const nom = req.body.nom
@@ -45,7 +33,7 @@ exports.signup = (req,res,next) => {
             /*console.log(infosUser)
             console.log('mdp hashé : ' +hash)*/
 
-            const db = dbConnect()
+            const db = database.connect()
             /*Requête d'insertion vers la Database*/
             /*************************************************/
 
@@ -76,7 +64,7 @@ exports.login = (req,res,next) => {
     const email = req.body.email
     const password = req.body.password
     const data = [email]
-    const db = dbConnect()
+    const db = database.connect()
 
     db.promise().query('SELECT * FROM Users WHERE email=?',data)
     .then((response) => {
@@ -121,7 +109,7 @@ exports.update = (req,res,next) => {
         res.status(400).json({ erreur : 'il manque des informations !'})
     }
     else if(req.file){
-        const db = dbConnect()
+        const db = database.connect()
         /*Requête de modification vers la Database*/
         /*************************************************/
         db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
@@ -172,10 +160,11 @@ exports.update = (req,res,next) => {
             db.end()
     }
 }
+
 exports.delete = (req,res,next) => {
     console.log(req.params.userId)
     const userId = [req.params.userId]
-    const db = dbConnect()
+    const db = database.connect()
     db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
     .then(() => { res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
@@ -184,7 +173,7 @@ exports.delete = (req,res,next) => {
 
 exports.getInfosProfil = (req,res,next) => {
     const userId = [req.params.userId]
-    const db = dbConnect()
+    const db = database.connect()
     db.promise().query('SELECT * FROM users WHERE userId=?',userId)
     .then((results) => {
         const resultats = results[0][0]

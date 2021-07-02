@@ -4,6 +4,19 @@ const usersRoutes = require('./routes/users')
 const chatRoutes = require('./routes/chat')
 const publicationRoutes = require('./routes/publications')
 const path = require('path')
+const mysql = require('mysql2')
+
+/*Création de la fonction de connection*/
+/*************************************************/
+exports.connect = function(){
+    const connection = mysql.createConnection({
+    host : 'localhost',
+    user : 'groupomania',
+    password : 'client',
+    database : 'groupomania'
+    })  
+    return connection
+}
 
 /*Paramétrage du CORS*/
 /*************************************************/
