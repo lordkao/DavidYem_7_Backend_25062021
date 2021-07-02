@@ -2,7 +2,7 @@ const mysql = require('mysql2')
 const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
 const jwt = require('jsonwebtoken')
-
+const fs = require('fs')
 
 /*Création de la fonction de connection*/
 /*************************************************/
@@ -115,7 +115,6 @@ exports.update = (req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
     const userId = req.params.userId
-    console.log(req.body)
     const infosUser = req.file ? [nom,prenom,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,userId]: [nom,prenom,userId]
 
     if(nom == '' || prenom == ''){
@@ -123,17 +122,23 @@ exports.update = (req,res,next) => {
     }
     else if(req.file){
         const db = dbConnect()
-            /*Requête de modification vers la Database*/
-            /*************************************************/
-            db.promise().query('UPDATE users SET nom = ?,prenom = ?,email = ?,urlImage = ? WHERE userId = ?',infosUser)
-            .then((response) => {
-                console.log(response[0])
-                res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+        /*Requête de modification vers la Database*/
+        /*************************************************/
+        db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
+        .then((response) => {
+            console.log(response[0])
+            res.status(200).json({message:'tout va bien !'})
+        })
+        .catch((err) => res.status(500).json(err))
+        /*db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
+        .then((response) => {
+            console.log(response[0])
+            res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+        })
+        .catch((err) => {
+            return res.status(500).json(err)
             })
-            .catch((err) => {
-                return res.status(500).json(err)
-             })
-            db.end()
+        db.end()*/
     }
     else{
             const db = dbConnect()
@@ -141,7 +146,7 @@ exports.update = (req,res,next) => {
             /*************************************************/
             db.promise().query('UPDATE users SET nom = ?,prenom = ? WHERE userId = ?',infosUser)
             .then((response) => {
-                console.log(response[0])
+                /*console.log(response[0])*/
                 res.status(200).json({ message: 'Modifications effectuées avec succès !'})
             })
             .catch((err) => {
