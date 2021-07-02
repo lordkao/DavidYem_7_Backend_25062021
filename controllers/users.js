@@ -129,19 +129,32 @@ exports.update = (req,res,next) => {
             console.log(response[0])
             const urlImage = response[0][0].urlImage
             console.log(urlImage)
-            const filename = urlImage.split('/images/')[1]
-            fs.unlink(`images/${filename}`,() => {
+            if(!urlImage === null){            
+                const filename = urlImage.split('/images/')[1]
+                fs.unlink(`images/${filename}`,() => {
+                    db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
+                    .then((response) => {
+                        console.log(response[0])
+                        res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+                    })
+                    .catch((err) => {
+                        return res.status(500).json(err)
+                    })
+                    db.end()
+                })
+            }
+            else{
                 db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
-                .then((response) => {
-                    console.log(response[0])
-                    res.status(200).json({ message: 'Modifications effectuées avec succès !'})
-                })
-                .catch((err) => {
-                    return res.status(500).json(err)
+                    .then((response) => {
+                        console.log(response[0])
+                        res.status(200).json({ message: 'Modifications effectuées avec succès !'})
                     })
-                db.end()
+                    .catch((err) => {
+                        return res.status(500).json(err)
                     })
-                })
+                    db.end()
+            }
+        })
         .catch((err) => res.status(500).json(err))
     }
     else{
@@ -159,7 +172,6 @@ exports.update = (req,res,next) => {
             db.end()
     }
 }
-
 exports.delete = (req,res,next) => {
     console.log(req.params.userId)
     const userId = [req.params.userId]
