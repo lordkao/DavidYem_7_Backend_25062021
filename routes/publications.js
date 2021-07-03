@@ -11,7 +11,7 @@ router.post('/',auth ,multer ,publicationsCtrl.createPublication)
 router.put('/:id',auth ,multer ,publicationsCtrl.updatePublication)
 
 /*Suppression de publication*/
-router.delete('/:id',auth ,multer ,publicationsCtrl.deletePublication)
+router.delete('/:id',auth ,publicationsCtrl.deletePublication)
 
 /*Obtention de toutes les publications*/
 router.get('/',auth ,publicationsCtrl.getAllPublications)

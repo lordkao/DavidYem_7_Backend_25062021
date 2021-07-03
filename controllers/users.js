@@ -118,7 +118,7 @@ exports.update = (req,res,next) => {
             console.log(response[0])
             const urlImage = response[0][0].urlImage
             console.log(urlImage)
-            if(!urlImage === null){            
+            if(urlImage !== null){            
                 const filename = urlImage.split('/images/')[1]
                 fs.unlink(`images/${filename}`,() => {
                     db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
