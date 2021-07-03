@@ -1,20 +1,8 @@
-const mysql = require('mysql2')
 const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
 const jwt = require('jsonwebtoken')
-
-
-/*Création de la fonction de connection*/
-/*************************************************/
-function dbConnect(){
-    const connection = mysql.createConnection({
-    host : 'localhost',
-    user : 'groupomania',
-    password : 'client',
-    database : 'groupomania'
-    })  
-    return connection
-}
+const fs = require('fs')
+const database = require('../app.js')
 
 exports.signup = (req,res,next) => {
     const nom = req.body.nom
@@ -45,7 +33,7 @@ exports.signup = (req,res,next) => {
             /*console.log(infosUser)
             console.log('mdp hashé : ' +hash)*/
 
-            const db = dbConnect()
+            const db = database.connect()
             /*Requête d'insertion vers la Database*/
             /*************************************************/
 
@@ -76,11 +64,13 @@ exports.login = (req,res,next) => {
     const email = req.body.email
     const password = req.body.password
     const data = [email]
-    const db = dbConnect()
+    const db = database.connect()
 
     db.promise().query('SELECT * FROM Users WHERE email=?',data)
     .then((response) => {
-        if(response.length == 0){
+        /*S'il n'y a pas de correspondance*/
+        console.log(response)
+        if(response[0].length == 0){
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
         else if(response.length > 0){
@@ -103,30 +93,66 @@ exports.login = (req,res,next) => {
                     )
                 })
             })
+            .catch((err) => res.status(500).json(err))
         }
     })
-    .catch( err => {return res.status(500).json({ err })})
+    .catch( err => {return res.status(500).json(err)})
     .then(() => db.end())
 }
 
 exports.update = (req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
-    const email = req.body.email
     const userId = req.params.userId
+    const infosUser = req.file ? [nom,prenom,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,userId]: [nom,prenom,userId]
 
-    const infosUser = req.file ? [nom,prenom,email,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,userId]: [nom,prenom,email,userId]
-
-    if(nom == '' || prenom == '' || email == '' || password == ''){
+    if(nom == '' || prenom == ''){
         res.status(400).json({ erreur : 'il manque des informations !'})
     }
     else if(req.file){
-        const db = dbConnect()
+        const db = database.connect()
+        /*Requête de modification vers la Database*/
+        /*************************************************/
+        db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
+        .then((response) => {
+            console.log(response[0])
+            const urlImage = response[0][0].urlImage
+            console.log(urlImage)
+            if(!urlImage === null){            
+                const filename = urlImage.split('/images/')[1]
+                fs.unlink(`images/${filename}`,() => {
+                    db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
+                    .then((response) => {
+                        console.log(response[0])
+                        res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+                    })
+                    .catch((err) => {
+                        return res.status(500).json(err)
+                    })
+                    db.end()
+                })
+            }
+            else{
+                db.promise().query('UPDATE users SET nom = ?,prenom = ?,urlImage = ? WHERE userId = ?',infosUser)
+                    .then((response) => {
+                        console.log(response[0])
+                        res.status(200).json({ message: 'Modifications effectuées avec succès !'})
+                    })
+                    .catch((err) => {
+                        return res.status(500).json(err)
+                    })
+                    db.end()
+            }
+        })
+        .catch((err) => res.status(500).json(err))
+    }
+    else{
+            const db = database.connect()
             /*Requête de modification vers la Database*/
             /*************************************************/
-            db.promise().query('UPDATE users SET nom = ?,prenom = ?,email = ?,urlImage = ? WHERE userId = ?',infosUser)
+            db.promise().query('UPDATE users SET nom = ?,prenom = ? WHERE userId = ?',infosUser)
             .then((response) => {
-                console.log(response[0])
+                /*console.log(response[0])*/
                 res.status(200).json({ message: 'Modifications effectuées avec succès !'})
             })
             .catch((err) => {
@@ -134,28 +160,36 @@ exports.update = (req,res,next) => {
              })
             db.end()
     }
-    else{
-            const db = dbConnect()
-            /*Requête de modification vers la Database*/
-            /*************************************************/
-            db.promise().query('UPDATE users SET nom = ?,prenom = ?,email = ? WHERE userId = ?',infosUser)
-            .then((response) => {
-                console.log(response[0])
-                res.status(200).json({ message: 'Modifications effectuées avec succès !'})
-            })
-            .catch((err) => {
-                return res.status(500).json(err)
-             })
-            db.end()
-        }
 }
 
 exports.delete = (req,res,next) => {
     console.log(req.params.userId)
     const userId = [req.params.userId]
-    const db = dbConnect()
+    const db = database.connect()
     db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
-    .then(() => { res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})})
+    .then(() => { 
+        console.log({ message:'Utilisateur supprimé avec succès !'})
+        res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
+    })
     .catch((err) => { res.status(500).json({ err })})
+    .then(() => db.end())
+}
+
+exports.getInfosProfil = (req,res,next) => {
+    const userId = [req.params.userId]
+    const db = database.connect()
+    db.promise().query('SELECT * FROM users WHERE userId=?',userId)
+    .then((results) => {
+        const resultats = results[0][0]
+        const dataToSend = {
+            nom: resultats.nom,
+            prenom: resultats.prenom,
+            email: resultats.email,
+            urlImage: resultats.urlImage
+        }
+        console.log(dataToSend)
+        return res.status(200).json(dataToSend)
+    })
+    .catch((err) => res.status(500).json(err))
     .then(() => db.end())
 }
