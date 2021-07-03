@@ -16,4 +16,7 @@ router.delete('/:id',auth ,multer ,publicationsCtrl.deletePublication)
 /*Obtention de toutes les publications*/
 router.get('/',auth ,publicationsCtrl.getAllPublications)
 
+/*Obtenir plus de publications*/
+router.get('/:numberOfPublications',auth ,publicationsCtrl.getMorePublications)
+
 module.exports = router

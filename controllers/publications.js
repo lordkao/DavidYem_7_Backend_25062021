@@ -16,6 +16,20 @@ exports.getAllPublications = (req,res,next) => {
     })
     .then(() => db.end())
 }
+exports.getMorePublications = (req,res,next) => {
+    const offset = req.params.numberOfPublications
+    console.log(offset)
+    const requete = `SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.message AS message,Publications.urlImage AS url,Publications.userId AS userId,DATE_FORMAT(Publications.date,GET_FORMAT(DATETIME,\'EUR\')) AS date,Publications.id AS id FROM Users INNER JOIN Publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10 OFFSET ${offset}`
+    console.log(requete)
+    const db = database.connect()
+    db.promise().query(requete)
+    .then((response) => {
+        res.status(200).json(response[0])
+    })
+    .catch((err) => res.status(500).json(err))
+    /*'SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.message AS message,Publications.urlImage AS url,Publications.userId AS userId,DATE_FORMAT(Publications.date,GET_FORMAT(DATETIME,\'EUR\')) AS date,Publications.id AS id FROM Users INNER JOIN Publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10 OFFSET 10' */
+    /*res.status(200).json({ message:'Nous avons bien reçue votre demande ! Merci de patienter...'})*/
+}
 exports.createPublication = (req,res,next) => {
     console.log(req.body)
     const userId = req.body.userId
@@ -73,6 +87,7 @@ exports.deletePublication = (req,res,next) => {
     console.log(req.params.id)
     const publication = [req.params.id]
     const db = database.connect()
+
     db.promise().query('DELETE FROM publications WHERE id=? ',publication)
     .then(() => { res.status(200).json({ message : 'Publication supprimée avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
