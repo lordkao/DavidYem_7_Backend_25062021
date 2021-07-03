@@ -69,7 +69,8 @@ exports.login = (req,res,next) => {
     db.promise().query('SELECT * FROM Users WHERE email=?',data)
     .then((response) => {
         /*S'il n'y a pas de correspondance*/
-        if(response.length == 0){
+        console.log(response)
+        if(response[0].length == 0){
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
         else if(response.length > 0){
@@ -95,7 +96,7 @@ exports.login = (req,res,next) => {
             .catch((err) => res.status(500).json(err))
         }
     })
-    .catch( err => {return res.status(500).json({ err })})
+    .catch( err => {return res.status(500).json(err)})
     .then(() => db.end())
 }
 
@@ -146,7 +147,7 @@ exports.update = (req,res,next) => {
         .catch((err) => res.status(500).json(err))
     }
     else{
-            const db = dbConnect()
+            const db = database.connect()
             /*Requête de modification vers la Database*/
             /*************************************************/
             db.promise().query('UPDATE users SET nom = ?,prenom = ? WHERE userId = ?',infosUser)
@@ -166,7 +167,10 @@ exports.delete = (req,res,next) => {
     const userId = [req.params.userId]
     const db = database.connect()
     db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
-    .then(() => { res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})})
+    .then(() => { 
+        console.log({ message:'Utilisateur supprimé avec succès !'})
+        res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
+    })
     .catch((err) => { res.status(500).json({ err })})
     .then(() => db.end())
 }
