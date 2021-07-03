@@ -1,4 +1,5 @@
 const database = require('../app.js')
+const fs = require('fs')
 
 /*Création de la fonction de connection*/
 /*************************************************/
@@ -85,12 +86,48 @@ exports.updatePublication = (req,res,next) => {
 }
 exports.deletePublication = (req,res,next) => {
     console.log(req.params.id)
-    const publication = [req.params.id]
+    const id = [req.params.id]
     const db = database.connect()
+        /*Requête de modification vers la Database*/
+        /*************************************************/
+        db.promise().query('SELECT urlImage FROM Publications WHERE Id=?',id)
+        .then((response) => {
+            console.log(response[0])
+            const urlImage = response[0][0].urlImage
+            console.log(urlImage)
+            if(urlImage !== null){            
+                const filename = urlImage.split('/images/')[1]
+                fs.unlink(`images/${filename}`,() => {
+                    db.promise().query('DELETE FROM publications WHERE id=? ',id)
+                    .then((response) => {
+                        console.log(response[0])
+                        res.status(200).json({ message: 'Publication supprimée avec succès !'})
+                    })
+                    .catch((err) => {
+                        return res.status(500).json(err)
+                    })
+                    db.end()
+                })
+            }
+            else{
+                db.promise().query('DELETE FROM publications WHERE id=? ',id)
+                    .then((response) => {
+                        console.log(response[0])
+                        res.status(200).json({ message: 'Publication supprimée avec succès !'})
+                    })
+                    .catch((err) => {
+                        return res.status(500).json(err)
+                    })
+                    db.end()
+            }
+        })
+        .catch((err) => res.status(500).json(err))
+    
 
-    db.promise().query('DELETE FROM publications WHERE id=? ',publication)
+
+    /*db.promise().query('DELETE FROM publications WHERE id=? ',id)
     .then(() => { res.status(200).json({ message : 'Publication supprimée avec succès !'})})
     .catch((err) => { res.status(500).json({ err })})
-    .then(() => db.end())
+    .then(() => db.end())*/
 }
 /*[req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]*/
