@@ -25,7 +25,13 @@ exports.getMorePublications = (req,res,next) => {
     const db = database.connect()
     db.promise().query(requete)
     .then((response) => {
-        res.status(200).json(response[0])
+        if(response[0].length == 0){
+            console.log(response[0].length)
+            res.status(404).json({ message : 'Il n\' y a plus d\'anciennes publications.'})
+        }
+        else{
+            res.status(200).json(response[0])
+        }
     })
     .catch((err) => res.status(500).json(err))
     /*'SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.message AS message,Publications.urlImage AS url,Publications.userId AS userId,DATE_FORMAT(Publications.date,GET_FORMAT(DATETIME,\'EUR\')) AS date,Publications.id AS id FROM Users INNER JOIN Publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10 OFFSET 10' */
@@ -122,12 +128,4 @@ exports.deletePublication = (req,res,next) => {
             }
         })
         .catch((err) => res.status(500).json(err))
-    
-
-
-    /*db.promise().query('DELETE FROM publications WHERE id=? ',id)
-    .then(() => { res.status(200).json({ message : 'Publication supprimée avec succès !'})})
-    .catch((err) => { res.status(500).json({ err })})
-    .then(() => db.end())*/
 }
-/*[req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`]*/
