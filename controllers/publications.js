@@ -34,6 +34,7 @@ exports.getMorePublications = (req,res,next) => {
         }
     })
     .catch((err) => res.status(500).json(err))
+    .then(() => db.end())
     /*'SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.message AS message,Publications.urlImage AS url,Publications.userId AS userId,DATE_FORMAT(Publications.date,GET_FORMAT(DATETIME,\'EUR\')) AS date,Publications.id AS id FROM Users INNER JOIN Publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10 OFFSET 10' */
     /*res.status(200).json({ message:'Nous avons bien reçue votre demande ! Merci de patienter...'})*/
 }
@@ -128,4 +129,57 @@ exports.deletePublication = (req,res,next) => {
             }
         })
         .catch((err) => res.status(500).json(err))
+        .then(() => db.end())
 }
+exports.like = (req,res,next) => {
+    const like = req.body.like
+    const userId = req.body.userId
+    const id = req.params.id
+    let arrayOfLikes = []
+    let arrayOfDislikes = []
+    const db = database.connect()
+    db.promise().query('SELECT usersLikes,usersDislikes FROM publications WHERE id = ?',[id])
+    .then((responses) => {
+        let likes = responses[0][0]
+        arrayOfLikes.push(likes.usersLikes)
+        arrayOfDislikes.push(likes.usersDislikes)
+        if(like == 1){
+            arrayOfLikes.push(userId)
+            console.log(`148:  ${arrayOfLikes}`)
+            db.promise().query('UPDATE Publications SET usersLikes=? WHERE id=?',[arrayOfLikes,id])
+            .then(() => res.status(200).json({message : 'Like mis à jour !'}))
+            .catch((err) => res.status(500).json(err))
+        }
+        else if(like == -1){
+            arrayOfDislikes.push(userId)
+            console.log(`je suis à else if  ${arrayOfDislikes}`)
+            db.promise().query('UPDATE Publications SET usersDislikes=? WHERE id=?',[arrayOfDislikes,id])
+            .then(() => res.status(200).json({message : 'Dislike mis à jour !'}))
+            .catch((err) => res.status(500).json(err))
+            .then(() => db.end())
+        }
+        else{
+            const foundLike = arrayOfLikes.find(elt => elt = userId )
+            const foundDislike = arrayOfDislikes.find(elt => elt = userId)
+            if(foundLike){
+                const index = arrayOfLikes.indexOf(foundLike)
+                arrayOfLikes.splice(index,1)
+                console.log(`167 : ${arrayOfLikes}`)
+                db.promise().query('UPDATE Publications SET usersLikes=? WHERE id=?',[arrayOfLikes,id])
+                .then(() => {res.status(200).json({message: 'Utilisateur neutre'})})
+                .catch((err) => res.status(500).json(err))
+            }
+            else if(foundDislike){  
+                const index = arrayOfDislikes.indexOf(foundDislike)
+                arrayOfDislikes.splice(index,1)
+                console.log(`175 : ${arrayOfDislikes}`)
+                db.promise().query('UPDATE Publications SET usersDislikes=? WHERE id=?',[arrayOfDislikes,id])
+                .then(() => {res.status(200).json({message: 'Utilisateur neutre'})})
+                .catch((err) => res.status(500).json(err))
+            }
+        }
+    })
+    .catch((err) => res.status(500).json(err))
+    .then(() => db.end())
+}
+/*res.status(200).json({ message :'L\'utilisateur a bien été enlevé des 2 tableaux de likes !'})*/
