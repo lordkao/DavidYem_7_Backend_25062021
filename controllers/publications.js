@@ -1,7 +1,7 @@
 const database = require('../app.js')
 const fs = require('fs')
 
-
+/*logique métier pour les publications*/
 exports.getAllPublications = (req,res,next) => {
     const db = database.connect()
 
@@ -129,6 +129,7 @@ exports.deletePublication = (req,res,next) => {
         .catch((err) => res.status(500).json(err))
         .then(() => db.end())
 }
+/*Gestion des likes*/
 exports.getLikes = (req,res,next) => {
     const id = req.params.id
     const db = database.connect()
