@@ -5,14 +5,19 @@ const chatRoutes = require('./routes/chat')
 const publicationRoutes = require('./routes/publications')
 const path = require('path')
 const mysql = require('mysql2')
+require('dotenv').config()
+const host = process.env.HOST
+const user = process.env.USER
+const password = process.env.PASSWORD
+const database = process.env.DATABASE
 /*Création de la fonction de connection*/
 /*************************************************/
 exports.connect = function(){
     const connection = mysql.createConnection({
-    host : 'localhost',
-    user : 'groupomania',
-    password : 'client',
-    database : 'groupomania'
+    host : host,
+    user : user,
+    password : password,
+    database : database
     })  
     return connection
 }

@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
+require('dotenv').config()
+const secretKey = process.env.TOKEN_LOGIN
 const database = require('../app.js')
 exports.signup = (req,res,next) => {
     const nom = req.body.nom
@@ -43,7 +45,7 @@ exports.signup = (req,res,next) => {
                     userId:userId,
                     token:jwt.sign(
                         { userId:userId},
-                        'RANDOM_TOKEN_SECRET',
+                        secretKey,
                         { expiresIn: '24h'}
                     )
                 })
@@ -86,7 +88,7 @@ exports.login = (req,res,next) => {
                     userId:userIdResult,
                     token:jwt.sign(
                         { userId:userIdResult},
-                        'RANDOM_TOKEN_SECRET',
+                        secretKey,
                         { expiresIn: '24h'}
                     )
                 })
