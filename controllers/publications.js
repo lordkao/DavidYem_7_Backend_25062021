@@ -103,7 +103,6 @@ exports.deletePublication = (req,res,next) => {
                     .catch((err) => {
                         return res.status(500).json(err)
                     })
-                    db.end()
                 })
             }
             else{
@@ -115,11 +114,9 @@ exports.deletePublication = (req,res,next) => {
                     .catch((err) => {
                         return res.status(500).json(err)
                     })
-                    db.end()
             }
         })
         .catch((err) => res.status(500).json(err))
-        .then(() => db.end())
 }
 /*Gestion des likes*/
 exports.getLikes = (req,res,next) => {
