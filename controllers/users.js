@@ -2,12 +2,24 @@ const bcrypt = require('bcrypt')
 const uniqid = require('uniqid')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
+require('dotenv').config()
+const secretKey = process.env.TOKEN_LOGIN
 const database = require('../app.js')
+const cryptoJs = require('crypto-js')
+const key = cryptoJs.enc.Hex.parse(process.env.KEY_CRYPTOJS)
+const iv = cryptoJs.enc.Hex.parse(process.env.IV_CRYPTOJS)
+function crypt(mail){
+    const cryptMail = cryptoJs.AES.encrypt(mail,key,{ iv:iv }).toString()
+    console.log(`mail crypté : ${cryptMail}`)
+    return cryptMail
+}
+
 exports.signup = (req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
     const email = req.body.email
     const password = req.body.password
+    const mailToSave = crypt(email)
 
 /*fonction qui permet la création d'un userId unique en utilisant les milliseconde de la date du moment*/
 /*************************************************//*************************************************/
@@ -28,7 +40,7 @@ exports.signup = (req,res,next) => {
         bcrypt.hash(password,10)
         .then(hash => {
             const userId = uniqueUserId()
-            const infosUser = [nom,prenom,email,hash,userId]
+            const infosUser = [nom,prenom,mailToSave,hash,userId]
             /*console.log(infosUser)
             console.log('mdp hashé : ' +hash)*/
 
@@ -43,7 +55,7 @@ exports.signup = (req,res,next) => {
                     userId:userId,
                     token:jwt.sign(
                         { userId:userId},
-                        'RANDOM_TOKEN_SECRET',
+                        secretKey,
                         { expiresIn: '24h'}
                     )
                 })
@@ -61,13 +73,17 @@ exports.login = (req,res,next) => {
     console.log(req.body)
     const email = req.body.email
     const password = req.body.password
-    const data = [email]
     const db = database.connect()
-
+    const mailToMatch = crypt(email)
+    /*Test pour la récuperation de l'email*/
+    const decryptedMail = cryptoJs.AES.decrypt(mailToMatch,key,{ iv:iv })
+    const originalMail = decryptedMail.toString(cryptoJs.enc.Utf8)
+    console.log(`mail d'origine: ${originalMail}`)
+    const data = [mailToMatch]
     db.promise().query('SELECT * FROM Users WHERE email=?',data)
     .then((response) => {
         /*S'il n'y a pas de correspondance*/
-        console.log(response)
+        console.log(response[0])
         if(response[0].length == 0){
             return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
         }
@@ -86,7 +102,7 @@ exports.login = (req,res,next) => {
                     userId:userIdResult,
                     token:jwt.sign(
                         { userId:userIdResult},
-                        'RANDOM_TOKEN_SECRET',
+                        secretKey,
                         { expiresIn: '24h'}
                     )
                 })
