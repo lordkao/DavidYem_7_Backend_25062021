@@ -1,8 +1,6 @@
 const database = require('../app.js')
 const fs = require('fs')
 
-/*Création de la fonction de connection*/
-/*************************************************/
 
 exports.getAllPublications = (req,res,next) => {
     const db = database.connect()
@@ -131,6 +129,34 @@ exports.deletePublication = (req,res,next) => {
         .catch((err) => res.status(500).json(err))
         .then(() => db.end())
 }
+exports.getLikes = (req,res,next) => {
+    const id = req.params.id
+    const db = database.connect()
+
+    db.promise().query('select COUNT(publication) AS compteur FROM likes where publication = ?',[id])
+
+    .then((responses) => {
+        return res.status(200).json(responses[0][0])
+    })
+    .catch((err) => {
+        return res.status(500).json(err)
+    })
+    .then(() => db.end())
+}
+exports.getDislikes = (req,res,next) => {
+    const id = req.params.id
+    const db = database.connect()
+
+    db.promise().query('select COUNT(publication) AS compteur FROM dislikes where publication = ?',[id])
+
+    .then((responses) => {
+        return res.status(200).json(responses[0][0])
+    })
+    .catch((err) => {
+        return res.status(500).json(err)
+    })
+    .then(() => db.end())
+}
 exports.like = (req,res,next) => {
     const like = req.body.like
     const userId = req.body.userId
@@ -144,7 +170,7 @@ exports.like = (req,res,next) => {
         .catch((err) => res.status(500).json(err))
     }
     else if(like == -1){
-        console.log('like = 2')
+        console.log('like = -1')
         db.promise().query('INSERT INTO Dislikes(publication,userId) VALUES(?,?)',[id,userId])
         .then(() => res.status(200).json({message : 'Dislike mis à jour !'}))
         .catch((err) => res.status(500).json(err))
@@ -162,5 +188,41 @@ exports.like = (req,res,next) => {
             })
         .catch((err) => res.status(500).json(err))
     }
-}       
+}   
+exports.noteLike = (req,res,next) => {
+    const id = req.params.id
+    const userId = req.params.userId
+    const db = database.connect()
+    db.promise().query('SELECT * FROM Likes WHERE userId = ? AND publication = ?',[userId,id])
+    .then((resultats) => {
+        if(resultats[0].length == 0){
+            console.log(resultats[0])
+            res.status(200).json({note:'0'})
+        }
+        else{
+            console.log(resultats[0])
+            res.status(200).json({note:'1'})
+        }
+    })
+    .catch((err) => res.status(500).json(err))
+    .then(() => db.end())    
+} 
+exports.noteDislike = (req,res,next) => {
+    const id = req.params.id
+    const userId = req.params.userId
+    const db = database.connect()
+    db.promise().query('SELECT * FROM Dislikes WHERE userId = ? AND publication = ?',[userId,id])
+    .then((resultats) => {
+        if(resultats[0].length == 0){
+            console.log(resultats[0])
+            res.status(200).json({note:'0'})
+        }
+        else{
+            console.log(resultats[0])
+            res.status(200).json({note:'-1'})
+        }
+    })
+    .catch((err) => res.status(500).json(err))
+    .then(() => db.end())    
+}     
     /*res.status(200).json({ message :'L\'utilisateur a bien été enlevé des 2 tableaux de likes !'})*/
