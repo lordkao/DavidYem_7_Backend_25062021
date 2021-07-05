@@ -14,5 +14,5 @@ router.get('/',auth ,publicationsCtrl.getAllPublications)
 /*Obtenir plus de publications*/
 router.get('/:numberOfPublications',auth ,publicationsCtrl.getMorePublications)
 /*Like et dislike des publications*/
-router.put('/:id/like',auth ,publicationsCtrl.like)
+router.post('/:id/like',auth ,publicationsCtrl.like)
 module.exports = router
