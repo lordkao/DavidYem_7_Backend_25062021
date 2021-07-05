@@ -1,5 +1,4 @@
 const database = require('../app.js')
-
 exports.getAllMessagesChat = (req,res,next) => {
     const db = database.connect()
 
@@ -14,6 +13,23 @@ exports.getAllMessagesChat = (req,res,next) => {
        return res.status(500).json(err)
     })
     .then(() => db.end())
+}
+exports.getMoreMessages = (req,res,next) => {
+    const numberOfMessages = [req.params.numberOfMessages]
+    const string = `SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.userId AS userId,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'EUR\')) AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10 OFFSET ${numberOfMessages}`
+    const db = database.connect()
+    db.promise().query(string)
+    .then((response) => {
+        if(response[0].length == 0){
+            console.log(response[0].length)
+            res.status(404).json({ message : 'Il n\' y a plus d\'anciens messages.'})
+        }
+        else{
+            console.log(numberOfMessages)
+            res.status(200).json(response[0])
+        }
+    })
+    .catch((err) => res.status(500).json(err))
 }
 exports.createMessageChat = (req,res,next) => {
     const date = new Date()

@@ -3,7 +3,6 @@ const uniqid = require('uniqid')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const database = require('../app.js')
-
 exports.signup = (req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
@@ -58,7 +57,6 @@ exports.signup = (req,res,next) => {
 
     }
 }
-
 exports.login = (req,res,next) => {
     console.log(req.body)
     const email = req.body.email
@@ -99,7 +97,6 @@ exports.login = (req,res,next) => {
     .catch( err => {return res.status(500).json(err)})
     .then(() => db.end())
 }
-
 exports.update = (req,res,next) => {
     const nom = req.body.nom
     const prenom = req.body.prenom
@@ -161,7 +158,6 @@ exports.update = (req,res,next) => {
             db.end()
     }
 }
-
 exports.delete = (req,res,next) => {
     console.log(req.params.userId)
     const userId = [req.params.userId]
@@ -174,7 +170,6 @@ exports.delete = (req,res,next) => {
     .catch((err) => { res.status(500).json({ err })})
     .then(() => db.end())
 }
-
 exports.getInfosProfil = (req,res,next) => {
     const userId = [req.params.userId]
     const db = database.connect()
