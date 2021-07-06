@@ -17,7 +17,7 @@ exports.getAllPublications = (req,res,next) => {
 exports.getMorePublications = (req,res,next) => {/*Regex ok*/
     const offset = req.params.numberOfPublications
     console.log(offset)
-    if((/[\D]/.test(offset))){
+    if((/[\D]/.test(offset))){/*Vérification de la valeur de offset*/
         res.status(400).json({ message :'offset invalide'})
     }
     else{
@@ -102,7 +102,7 @@ exports.updatePublication = (req,res,next) => {/*Regex ok*//*ce middleware a ét
 exports.deletePublication = (req,res,next) => {/*Regex ok*/
     console.log(req.params.id)
     const id = [req.params.id]
-    if((/[\D]/.test(id))){/*Vérification de la valeur de userId*/
+    if((/[\D]/.test(id))){/*Vérification de la valeur de Id*/
         res.status(400).json({ message :'Id invalide'})
     }
     else{
