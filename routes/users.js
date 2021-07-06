@@ -8,9 +8,9 @@ router.post('/signup',userCtrl.signup)
 /*Connexion*/
 router.post('/login',userCtrl.login)
 /*Modification*/
-router.put('/:userId',auth ,multer ,userCtrl.update)
+router.put('/:userId',multer ,userCtrl.update)
 /*Suppression*/
-router.delete('/:userId',auth ,userCtrl.delete)
+router.delete('/:userId',userCtrl.delete)
 /*Obtenir les infos user en validant le userId*/
-router.get('/:userId',auth ,userCtrl.getInfosProfil)
+router.get('/:userId',userCtrl.getInfosProfil)
 module.exports = router
