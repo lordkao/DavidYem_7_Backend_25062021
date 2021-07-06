@@ -84,11 +84,6 @@ exports.signup = (req,res,next) => {
         .catch((err) => res.status(500).json({err}))
     }
 }       
-  
-
-
-
-
 exports.login = (req,res,next) => {
     console.log(req.body)
     const email = req.body.email
