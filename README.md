@@ -25,17 +25,42 @@ Dans votre dossier racine du projet sur votre machine,il vous faudra créer un f
 Celui-ci va nous permettre de gérer nos variables d'environnement qui contiendront les données sensibles.
 
 faites un copier/coller dans .env de ceci:
-(Remplacez les valeurs entre '< >' par vos propres informations)
+(Remplacez les valeurs entre ' ' par vos propres informations)
+/****************************************************************************/
+HOST='localhost par default en local'
 
-HOST='<localhost par default en local>'
-USER='<nom de l\'utilisateur avec lequel vous vous connecter>'
-PASSWORD='<client>'
-DATABASE='groupomania'
-TOKEN_LOGIN='RANDOM_TOKEN_SECRET'
-KEY_CRYPTOJS='000102030405060708090a0b0c0d0e0f'
-IV_CRYPTOJS='101112131415161718191a1b1c1d1e1f'
-ADMIN='mQp/48cBYhBFVsQpwe0aqYhYK/tUwRkP9NUGNZDLrEE='
-USERID_ADMIN='16255488235661am4i4dwskqrlsrnz'
+USER='nom de l'utilisateur avec lequel vous vous connecter'
+
+PASSWORD='votre mot de passe'
+
+DATABASE='nom de votre database'
+
+TOKEN_LOGIN='chaîne de caractère aléatoire'
+
+KEY_CRYPTOJS='000102030405060708090a0b0c0d0e0f'<====exeption pour la clé,il vous faut 32 caractères(je vous laisse le choix de modifier celle_ci à votre guise)
+
+IV_CRYPTOJS='101112131415161718191a1b1c1d1e1f'<====== exeption comme pour la KEY il faut aussi 32 caractères
+
+!ATTENTION!
+ADMIN='mQp/48cBYhBFVsQpwe0aqYhYK/tUwRkP9NUGNZDLrEE=' <===cette chaîne de caractère est le résultat du mail crypté de 'groupomania@hotmail.fr',
+Remplacer par votre mail crypté (une fois crypté avec vos 'KEY' et 'IV' défini) avec lequel vous créer votre compte
+afin de pouvoir obtenir la main sur tous les éléments postés coté Front.
+
+!ATTENTION!
+USERID_ADMIN='16255488235661am4i4dwskqrlsrnz'  <===cette chaîne correspond au userId de votre compte une fois créer,remplacez-la par le votre
+
+!IMPORTANT! : une fois ces 2 variables configurées,aller sur la partie FRONTEND et remplacez les valeurs de la variable 'const userIdAdmin' présente dans la partie top des fichiers 'chat.js' et 'multimedia.js'. Une fois terminé,vous venez de créer un compte admin vous permettant de gérer le contenu sur les 2 forums chat et publications de l'application.
+
+
+/*******compte pour le/la chargé de communication************/
+Voici les informations par défaut du compte Admin que vous pouvez créer si vous ne touchez pas au code.
+
+email=groupomania@hotmail.fr
+email une fois crypté ===> mQp/48cBYhBFVsQpwe0aqYhYK/tUwRkP9NUGNZDLrEE=
+password='mot de passe lors de la création'
+
+/****************************************************************************/
+Enfin reprenons la suite des modules qui seront installer suite à l'exécution de 'npm install':
 
 -Express qui va nous permettre de créer notre API afin d'intéragir avec la base de données et le front.
 
