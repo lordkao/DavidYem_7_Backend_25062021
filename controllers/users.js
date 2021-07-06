@@ -17,7 +17,7 @@ function crypt(mail){
     return cryptMail
 }
 
-exports.signup = (req,res,next) => {
+exports.signup = (req,res,next) => {/*Regex ok*/
     const nom = req.body.nom
     const prenom = req.body.prenom
     const email = req.body.email
@@ -35,6 +35,18 @@ exports.signup = (req,res,next) => {
     }
     if(nom == '' || prenom == '' || email == '' || password == ''){
         res.status(400).json({ erreur : 'il manque des informations !'})
+    }
+    else if((/[a-zA-Zéèçà][-]{1,}$/.test(nom))||(/[^a-zA-Zéèçà-]/.test(nom))){/*Verification du nom*/
+        res.status(400).json({message:'Les caractères spéciaux ne sont pas autorisés!'})
+    }
+    else if((/[a-zA-Zéèçà][-]{1,}$/.test(prenom))||(/[^a-zA-Zéèçà-]/.test(prenom))){
+        res.status(400).json({message:'Les caractères spéciaux ne sont pas autorisés!'})
+    }
+    else if((/^([\w.-]+)[@]{1}([\w]+)[.]{1}([a-z]){2,5}$/.test(email))===false){
+        res.status(400).json({message:'La syntaxe de mail n\'est pas respectée !(ex:david@hotmail.com)'})
+    }
+    else if(/([^a-zA-Z0-9@]+)/.test(password)){
+        res.status(400).json({message:'Les caractères spéciaux ne sont pas autorisés!'})
     }
     else{
         /*Emploi de bcrypt pour hasher et saler le password*/
@@ -84,7 +96,7 @@ exports.signup = (req,res,next) => {
         .catch((err) => res.status(500).json({err}))
     }
 }       
-exports.login = (req,res,next) => {
+exports.login = (req,res,next) => {/*Regex ok*/
     console.log(req.body)
     const email = req.body.email
     const password = req.body.password
@@ -97,39 +109,48 @@ exports.login = (req,res,next) => {
     /*Console.log pour confirmer le décryptage du mal*/
     console.log(`mail d'origine: ${originalMail}`)
     const data = [mailToMatch]
-    db.promise().query('SELECT * FROM Users WHERE email=?',data)
-    .then((response) => {
-        /*S'il n'y a pas de correspondance*/
-        console.log(response[0])
-        if(response[0].length == 0){
-            return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
-        }
-        else if(response.length > 0){
-            const result = response[0]
-            const userIdResult = result[0].userId
-            const passwordResult = result[0].password
-            console.log(`userId : ${userIdResult} et password : ${passwordResult}`)
-            bcrypt.compare(password,passwordResult)
-            .then(valid => {
-                if(!valid){
-                    return res.status(401).json({ error: 'Mot de passe incorrect !'})
-                }
-                return res.status(200).json({ 
-                    userId:userIdResult,
-                    token:jwt.sign(
-                        { userId:userIdResult},
-                        secretKey,
-                        { expiresIn: '24h'}
-                    )
+
+    if((/^([\w.-]+)[@]{1}([\w]+)[.]{1}([a-z]){2,5}$/.test(email))===false){
+        res.status(400).json({message:'La syntaxe de mail n\'est pas respectée !(ex:david@hotmail.com)'})
+    }
+    else if(/([^a-zA-Z0-9@]+)/.test(password)){
+        res.status(400).json({message:'Les caractères spéciaux ne sont pas autorisés!'})
+    }
+    else{
+        db.promise().query('SELECT * FROM Users WHERE email=?',data)
+        .then((response) => {
+            /*S'il n'y a pas de correspondance*/
+            console.log(response[0])
+            if(response[0].length == 0){
+                return res.status(401).json({ erreur:' Utilisateur non trouvé !'})
+            }
+            else if(response.length > 0){
+                const result = response[0]
+                const userIdResult = result[0].userId
+                const passwordResult = result[0].password
+                console.log(`userId : ${userIdResult} et password : ${passwordResult}`)
+                bcrypt.compare(password,passwordResult)
+                .then(valid => {
+                    if(!valid){
+                        return res.status(401).json({ error: 'Mot de passe incorrect !'})
+                    }
+                    return res.status(200).json({ 
+                        userId:userIdResult,
+                        token:jwt.sign(
+                            { userId:userIdResult},
+                            secretKey,
+                            { expiresIn: '24h'}
+                        )
+                    })
                 })
-            })
-            .catch((err) => res.status(500).json(err))
-        }
-    })
-    .catch( err => {return res.status(500).json(err)})
-    .then(() => db.end())
+                .catch((err) => res.status(500).json(err))
+            }
+        })
+        .catch( err => {return res.status(500).json(err)})
+        .then(() => db.end())
+    }
 }
-exports.update = (req,res,next) => {
+exports.update = (req,res,next) => {/*Regex ok */
     const nom = req.body.nom
     const prenom = req.body.prenom
     const userId = req.params.userId
@@ -137,6 +158,15 @@ exports.update = (req,res,next) => {
 
     if(nom == '' || prenom == ''){
         res.status(400).json({ erreur : 'il manque des informations !'})
+    }
+    else if((/[a-zA-Zéèçà][-]{1,}$/.test(nom))||(/[^a-zA-Zéèçà-]/.test(nom))){/*Verification du nom*/
+        res.status(400).json({message:'Les caractères spéciaux ne sont pas autorisés!'})
+    }
+    else if((/[a-zA-Zéèçà][-]{1,}$/.test(prenom))||(/[^a-zA-Zéèçà-]/.test(prenom))){/*Vérification du prenom*/
+        res.status(400).json({message:'Les caractères spéciaux ne sont pas autorisés!'})
+    }
+    else if((/([^a-zA-Z0-9@]+)/.test(userId))){/*Vérification de la valeur de userId*/
+        res.status(400).json({ message :'format du UserId invalide'})
     }
     else if(req.file){
         const db = database.connect()
@@ -192,61 +222,72 @@ exports.update = (req,res,next) => {
             db.end()
     }
 }
-exports.delete = (req,res,next) => {
+exports.delete = (req,res,next) => {/*Regex ok*/
     console.log(req.params.userId)
     const userId = [req.params.userId]
     const db = database.connect()
-    /*On va vérifier si une image a été enregistrer sur ce compte utilisateur*/
-    db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
-    .then((response) => {
-        console.log(response[0][0])
-        const urlImage = response[0][0].urlImage
-        console.log(urlImage)
-        /*Si urlImage n'est pas null on va utiliser fs pour supprimer l'image avant de la remplacer par la nouvelle*/
-        if(urlImage !== null){            
-            const filename = urlImage.split('/images/')[1]
-            fs.unlink(`images/${filename}`,() => {
-                /*Suppression dans la base de données par rapport à userId*/
+    if((/([^a-zA-Z0-9@]+)/.test(userId))){/*Vérification de la valeur de userId*/
+        res.status(400).json({ message :'format du UserId invalide'})
+    }
+    else{
+        /*On va vérifier si une image a été enregistrer sur ce compte utilisateur*/
+        db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
+        .then((response) => {
+            console.log(response[0][0])
+            const urlImage = response[0][0].urlImage
+            console.log(urlImage)
+            /*Si urlImage n'est pas null on va utiliser fs pour supprimer l'image avant de la remplacer par la nouvelle*/
+            if(urlImage !== null){            
+                const filename = urlImage.split('/images/')[1]
+                fs.unlink(`images/${filename}`,() => {
+                    /*Suppression dans la base de données par rapport à userId*/
+                    db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
+                    .then((response) => {
+                        console.log({ message:'Utilisateur supprimé avec succès !'})
+                        res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
+                    })
+                    .catch((err) => {
+                        return res.status(500).json({err})
+                        })
+                    db.end()
+                })
+            }
+            else{
                 db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
                 .then((response) => {
                     console.log({ message:'Utilisateur supprimé avec succès !'})
                     res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
                 })
                 .catch((err) => {
-                     return res.status(500).json({err})
+                        return res.status(500).json({err})
                     })
                 db.end()
-            })
-        }
-        else{
-            db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
-            .then((response) => {
-                console.log({ message:'Utilisateur supprimé avec succès !'})
-                res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
-            })
-            .catch((err) => {
-                    return res.status(500).json({err})
-                })
-            db.end()
-        }
-    }) 
+            }
+        }) 
+    }
 }       
-exports.getInfosProfil = (req,res,next) => {
+exports.getInfosProfil = (req,res,next) => {/*Regex ok*/
     const userId = [req.params.userId]
     const db = database.connect()
     /*Obtention des informations utilisateur*/
-    db.promise().query('SELECT * FROM users WHERE userId=?',userId)
-    .then((results) => {
-        const resultats = results[0][0]
-        const dataToSend = {
-            nom: resultats.nom,
-            prenom: resultats.prenom,
-            email: resultats.email,
-            urlImage: resultats.urlImage
-        }
-        console.log(dataToSend)
-        return res.status(200).json(dataToSend)
-    })
-    .catch((err) => res.status(500).json(err))
-    .then(() => db.end())
+    if((/([^a-zA-Z0-9@]+)/.test(userId))){/*Vérification de la valeur de userId*/
+        res.status(400).json({ message :'format du UserId invalide'})
+    }
+    else{
+        db.promise().query('SELECT * FROM users WHERE userId=?',userId)
+        .then((results) => {
+            const resultats = results[0][0]
+            const dataToSend = {
+                nom: resultats.nom,
+                prenom: resultats.prenom,
+                email: resultats.email,
+                urlImage: resultats.urlImage
+            }
+            console.log(dataToSend)
+            return res.status(200).json(dataToSend)
+        })
+        .catch((err) => res.status(500).json(err))
+        .then(() => db.end())
+    }
+    
 }

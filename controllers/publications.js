@@ -75,7 +75,7 @@ exports.updatePublication = (req,res,next) => {/*Regex ok*//*ce middleware a ét
     const message = req.body.message
     const date = new Date()
     /*Condition pour déterminer la variable publication si un fichier est joint*/
-    const publication = req.file ? [req.params.id,userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`] : [req.params.id,userId,message,date]
+    const publication = req.file ? [userId,message,date,`${req.protocol}://${req.get('host')}/images/${req.file.filename}`,req.params.id] : [userId,message,date,req.params.id,]
     if((/[=*<>&|]/.test(message))){/*Vérification de la valeur de message */
         res.status(400).json({ message :'Ces caractères spéciaux sont interdits pour des raisons de sécurité(=*<>&|)'})
     }
@@ -85,7 +85,7 @@ exports.updatePublication = (req,res,next) => {/*Regex ok*//*ce middleware a ét
     /*Si un fichier est joint*/
     else if(req.file){
         const db = database.connect()
-        db.promise().query('UPDATE publications(userId,message,date,urlImage) WHERE id=? VALUES (?,?,?,?)',publication)
+        db.promise().query('UPDATE publications SET userId = ?,message = ?,date = ?,urlImage = ? WHERE id=?',publication)
         .then(() => { res.status(201).json({ message : 'Publication modifiée avec succès !'})})
         .catch((err) => { res.status(500).json({ err })})
         .then(() => db.end())    
@@ -93,7 +93,7 @@ exports.updatePublication = (req,res,next) => {/*Regex ok*//*ce middleware a ét
     /*Sinon on met à jour la publication*/
     else{
         const db = database.connect()
-        db.promise().query('UPDATE publications(userId,message,date) WHERE id=? VALUES (?,?,?)',publication)
+        db.promise().query('UPDATE publications SET userId = ?,message = ?,date = ? WHERE id=?',publication)
         .then(() => { res.status(201).json({ message : 'Publication modifiée avec succès !'})})
         .catch((err) => { res.status(500).json({ err })})
         .then(() => db.end())
@@ -185,8 +185,12 @@ exports.postLike = (req,res,next) => {/*Regex ok*/
     const userId = req.body.userId
     const id = req.params.id
     const db = database.connect()
+
     if((/[\D]/.test(id))){/*Vérification de la valeur de Id*/
         res.status(400).json({ message :'Id invalide'})
+    }
+    else if((/[\D]/.test(like))){/*Vérification de la valeur de like*/
+        res.status(400).json({ message :'like invalide'})
     }
     else if((/([^a-zA-Z0-9@]+)/.test(userId))){/*Vérification de la valeur de userId*/
         res.status(400).json({ message :'format du UserId invalide'})
@@ -203,7 +207,7 @@ exports.postLike = (req,res,next) => {/*Regex ok*/
         .then(() => {res.status(200).json({ message : 'User neutre !'})})
         .catch((err) => res.status(500).json(err))
         }   
-    } 
+} 
 exports.postDislike = (req,res,next) => {/*Regex ok*/
     const like = req.body.like
     const userId = req.body.userId
@@ -211,6 +215,9 @@ exports.postDislike = (req,res,next) => {/*Regex ok*/
     const db = database.connect()
     if((/[\D]/.test(id))){/*Vérification de la valeur de Id*/
         res.status(400).json({ message :'Id invalide'})
+    }
+    else if((/[^0-9-]/.test(like))){/*Vérification de la valeur de like*/
+        res.status(400).json({ message :'like invalide'})
     }
     else if((/([^a-zA-Z0-9@]+)/.test(userId))){/*Vérification de la valeur de userId*/
         res.status(400).json({ message :'format du UserId invalide'})
@@ -229,6 +236,7 @@ exports.postDislike = (req,res,next) => {/*Regex ok*/
     }   
 } 
 exports.getOneLike = (req,res,next) => {/*Regex ok*/
+    const id = req.params.id
     const userId = req.params.userId
     if((/[\D]/.test(id))){/*Vérification de la valeur de Id*/
         res.status(400).json({ message :'Id invalide'})
