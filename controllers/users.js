@@ -185,7 +185,7 @@ exports.delete = (req,res,next) => {
     /*On va vérifier si une image a été enregistrer sur ce compte utilisateur*/
     db.promise().query('SELECT urlImage FROM users WHERE userId=?',[userId])
     .then((response) => {
-        console.log(response[0])
+        console.log(response[0][0])
         const urlImage = response[0][0].urlImage
         console.log(urlImage)
         /*Si urlImage n'est pas null on va utiliser fs pour supprimer l'image avant de la remplacer par la nouvelle*/
@@ -198,9 +198,22 @@ exports.delete = (req,res,next) => {
                     console.log({ message:'Utilisateur supprimé avec succès !'})
                     res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
                 })
-                .catch((err) => { return res.status(500).json(err)})
+                .catch((err) => {
+                     return res.status(500).json({err})
+                    })
                 db.end()
             })
+        }
+        else{
+            db.promise().query('DELETE FROM users WHERE userId = ? ',userId)
+            .then((response) => {
+                console.log({ message:'Utilisateur supprimé avec succès !'})
+                res.status(200).json({ message : 'compte utilisateur supprimé avec succès !'})
+            })
+            .catch((err) => {
+                    return res.status(500).json({err})
+                })
+            db.end()
         }
     }) 
 }       
