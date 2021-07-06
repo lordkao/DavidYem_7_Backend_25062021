@@ -186,7 +186,5 @@ exports.postDislike = (req,res,next) => {/*OK*/
     }   
 } 
 exports.getOneLike = (req,res,next) => {
-console.log(`publicationId : ${req.params.id} et le userIdLike : ${req.params.userId}`)
-res.status(200).json({message:'ok ok ok'})
-}  
-    /*res.status(200).json({ message :'L\'utilisateur a bien été enlevé des 2 tableaux de likes !'})*/
+    res.status(200).json({message:'requête reçue !'})
+} 
