@@ -8,6 +8,8 @@ const database = require('../app.js')
 const cryptoJs = require('crypto-js')
 const key = cryptoJs.enc.Hex.parse(process.env.KEY_CRYPTOJS)
 const iv = cryptoJs.enc.Hex.parse(process.env.IV_CRYPTOJS)
+const mailAdmin = process.env.ADMIN
+const userIdAdmin = process.env.USERID_ADMIN
 /*Fonction qui crypt le mail renseigné*/
 function crypt(mail){
     const cryptMail = cryptoJs.AES.encrypt(mail,key,{ iv:iv }).toString()
@@ -21,9 +23,9 @@ exports.signup = (req,res,next) => {
     const email = req.body.email
     const password = req.body.password
     const mailToSave = crypt(email)
-
-/*fonction qui permet la création d'un userId unique en utilisant les milliseconde de la date du moment*/
-/*************************************************//*************************************************/
+    const Admin = mailAdmin
+    /*fonction qui permet la création d'un userId unique en utilisant les milliseconde de la date du moment*/
+    /*************************************************//*************************************************/
     function uniqueUserId(){
         let date = new Date()
         let time = date.getTime()
@@ -31,7 +33,6 @@ exports.signup = (req,res,next) => {
         console.log('test : '+uniqueUserId) 
         return uniqueUserId
     }
-
     if(nom == '' || prenom == '' || email == '' || password == ''){
         res.status(400).json({ erreur : 'il manque des informations !'})
     }
@@ -39,37 +40,55 @@ exports.signup = (req,res,next) => {
         /*Emploi de bcrypt pour hasher et saler le password*/
         /*************************************************/
         bcrypt.hash(password,10)
-        .then(hash => {
+        .then((hash) => {
             const userId = uniqueUserId()
             const infosUser = [nom,prenom,mailToSave,hash,userId]
             /*console.log(infosUser)
             console.log('mdp hashé : ' +hash)*/
-
+    
             const db = database.connect()
-            /*Requête d'insertion vers la Database*/
-            /*************************************************/
-
-            db.promise().query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',infosUser)
-            .then((response) => {
-                console.log(response[0])
-                return res.status(201).json({ 
-                    userId:userId,
-                    token:jwt.sign(
-                        { userId:userId},
-                        secretKey,
-                        { expiresIn: '24h'}
-                    )
+            /*Si le mail correspond au mail du e-communication*/
+            if(crypt(email) === Admin){
+                const data = [nom,prenom,mailToSave,hash,userIdAdmin]
+                db.promise().query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',data)
+                .then((response) => {
+                    console.log(response[0])
+                    return res.status(201).json({ 
+                        userId:userIdAdmin,
+                        token:jwt.sign(
+                            { userId:userIdAdmin},
+                            secretKey,
+                            { expiresIn: '24h'}
+                        )
+                    })
                 })
-            })
-            .catch((err) => {
-                return res.status(500).json(err)
-             })
-            db.end()
+                .catch((err) => res.status(500).json({err}))
+            }
+            /*Sinon on créer un simple compte*/
+            else{
+                db.promise().query('INSERT INTO users (nom,prenom,email,password,userId) VALUES (?,?,?,?,?)',infosUser)
+                .then((response) => {
+                    console.log(response[0])
+                    return res.status(201).json({ 
+                        userId:userId,
+                        token:jwt.sign(
+                            { userId:userId},
+                            secretKey,
+                            { expiresIn: '24h'}
+                        )
+                    })
+                })
+                .catch((err) => res.status(500).json({err}))
+            }
         })
-        .catch( err => res.status(500).json({ err }))
-
+        .catch((err) => res.status(500).json({err}))
     }
-}
+}       
+  
+
+
+
+
 exports.login = (req,res,next) => {
     console.log(req.body)
     const email = req.body.email
