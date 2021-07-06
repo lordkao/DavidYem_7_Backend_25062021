@@ -119,7 +119,7 @@ exports.deletePublication = (req,res,next) => {
         .catch((err) => res.status(500).json(err))
 }
 /*Gestion des likes*/
-exports.getLikes = (req,res,next) => {
+exports.getLikes = (req,res,next) => {/*OK*/
     const id = req.params.id
     const db = database.connect()
 
@@ -133,7 +133,7 @@ exports.getLikes = (req,res,next) => {
     })
     .then(() => db.end())
 }
-exports.getDislikes = (req,res,next) => {
+exports.getDislikes = (req,res,next) => {/*OK*/
     const id = req.params.id
     const db = database.connect()
 
@@ -147,73 +147,46 @@ exports.getDislikes = (req,res,next) => {
     })
     .then(() => db.end())
 }
-exports.like = (req,res,next) => {
+exports.postLike = (req,res,next) => {/*OK*/
     const like = req.body.like
     const userId = req.body.userId
     const id = req.params.id
     const db = database.connect()
 
-    if(like == 1){
+    if(like == 1){/*Like*/
         console.log('like = 1')
         db.promise().query('INSERT INTO Likes(publication,userId) VALUES(?,?)',[id,userId])
         .then(() => res.status(200).json({message : 'Like mis à jour !'}))
         .catch((err) => res.status(500).json(err))
     }
-    else if(like == -1){
+    else{/*Neutre*/
+        console.log('like = 0')
+        db.promise().query('DELETE FROM Likes WHERE userId = ? AND publication = ?',[userId,id])
+        .then(() => {res.status(200).json({ message : 'User neutre !'})})
+        .catch((err) => res.status(500).json(err))
+        }   
+    } 
+exports.postDislike = (req,res,next) => {/*OK*/
+    const like = req.body.like
+    const userId = req.body.userId
+    const id = req.params.id
+    const db = database.connect()
+
+    if(like == -1){/*Dislike*/
         console.log('like = -1')
         db.promise().query('INSERT INTO Dislikes(publication,userId) VALUES(?,?)',[id,userId])
         .then(() => res.status(200).json({message : 'Dislike mis à jour !'}))
         .catch((err) => res.status(500).json(err))
-        .then(() => db.end())
     }
-    else{
+    else{/*Neutre*/
         console.log('like = 0')
-        db.promise().query('DELETE FROM Likes WHERE userId = ? AND publication = ?',[userId,id])
-        .then(() => {
-            db.promise().query('DELETE FROM Dislikes WHERE userId = ? AND publication = ?',[userId,id])
-            .then(() => {
-                res.status(200).json({ message :'L\'utilisateur a bien été enlevé des 2 tableaux de likes !'})
-            })
-            .catch((err) => res.status(500).json(err))
-            })
+        db.promise().query('DELETE FROM Dislikes WHERE userId = ? AND publication = ?',[userId,id])
+        .then(() => { res.status(200).json({ message : 'User neutre !'})})
         .catch((err) => res.status(500).json(err))
-    }
-}   
-exports.noteLike = (req,res,next) => {
-    const id = req.params.id
-    const userId = req.params.userId
-    const db = database.connect()
-    db.promise().query('SELECT * FROM Likes WHERE userId = ? AND publication = ?',[userId,id])
-    .then((resultats) => {
-        if(resultats[0].length == 0){
-            console.log(resultats[0])
-            res.status(200).json({note:'0'})
-        }
-        else{
-            console.log(resultats[0])
-            res.status(200).json({note:'1'})
-        }
-    })
-    .catch((err) => res.status(500).json(err))
-    .then(() => db.end())    
+    }   
 } 
-exports.noteDislike = (req,res,next) => {
-    const id = req.params.id
-    const userId = req.params.userId
-    const db = database.connect()
-    /*Vérification de la présence d'un userId dans la table Dislikes*/
-    db.promise().query('SELECT * FROM Dislikes WHERE userId = ? AND publication = ?',[userId,id])
-    .then((resultats) => {
-        if(resultats[0].length == 0){
-            console.log(resultats[0])
-            res.status(200).json({note:'0'})
-        }
-        else{
-            console.log(resultats[0])
-            res.status(200).json({note:'-1'})
-        }
-    })
-    .catch((err) => res.status(500).json(err))
-    .then(() => db.end())    
-}     
+exports.getOneLike = (req,res,next) => {
+console.log(`publicationId : ${req.params.id} et le userIdLike : ${req.params.userId}`)
+res.status(200).json({message:'ok ok ok'})
+}  
     /*res.status(200).json({ message :'L\'utilisateur a bien été enlevé des 2 tableaux de likes !'})*/

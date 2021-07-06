@@ -14,9 +14,9 @@ router.get('/',auth ,publicationsCtrl.getAllPublications)
 /*Obtenir plus de publications*/
 router.get('/:numberOfPublications',auth ,publicationsCtrl.getMorePublications)
 /*Like et dislike des publications*/
-router.post('/:id/like',auth ,publicationsCtrl.like)
-router.get('/:id/like',auth ,publicationsCtrl.getLikes)
-router.get('/:id/dislike',auth ,publicationsCtrl.getDislikes)
-router.get('/:id/like/:userId',auth ,publicationsCtrl.noteLike)
-router.get('/:id/dislike/:userId',auth ,publicationsCtrl.noteDislike)
+router.post('/:id/likes',auth ,publicationsCtrl.postLike)/*ok*/
+router.post('/:id/dislikes',auth ,publicationsCtrl.postDislike)/*ok*/
+router.get('/:id/likes',auth ,publicationsCtrl.getLikes)/*ok*/
+router.get('/:id/dislikes',auth ,publicationsCtrl.getDislikes)/*ok*/
+router.get('/:id/likes/:userId', auth ,publicationsCtrl.getOneLike)
 module.exports = router
