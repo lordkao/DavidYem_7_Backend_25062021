@@ -118,6 +118,33 @@ ADD INDEX ind_date_chat (date);
 ALTER TABLE chat
 ADD CONSTRAINT fk_userId_chat FOREIGN KEY(userId) REFERENCES users(userId) ON DELETE CASCADE;
 
+CREATE TABLE likes(
+id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+publication INT UNSIGNED NOT NULL,
+userId VARCHAR(50) NOT NULL
+)
+ENGINE=INNODB;
+/*****************************************/
+CREATE TABLE dislikes(
+id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+publication INT UNSIGNED NOT NULL,
+userId VARCHAR(50) NOT NULL
+)
+ENGINE=INNODB;
+/***********************************************************/
+
+ALTER TABLE likes
+ADD CONSTRAINT fk_userId_likes FOREIGN KEY(userId) REFERENCES users(userId) ON DELETE CASCADE;
+
+
+ALTER TABLE dislikes
+ADD CONSTRAINT fk_userId_dislikes FOREIGN KEY(userId) REFERENCES users(userId) ON DELETE CASCADE;
+
+ALTER TABLE likes
+ADD CONSTRAINT fk_publicationId_likes FOREIGN KEY(publication) REFERENCES publications(id) ON DELETE CASCADE;
+
+ALTER TABLE dislikes
+ADD CONSTRAINT fk_publicationId_dislikes FOREIGN KEY(publication) REFERENCES publications(id) ON DELETE CASCADE;
 
 
 
