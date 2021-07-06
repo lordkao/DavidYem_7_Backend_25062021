@@ -48,7 +48,7 @@ Puis suivez les instructions indiquées,si vous n'y arrivez pas suivez ce cours 
 ==>https://openclassrooms.com/fr/courses/1959476-administrez-vos-bases-de-donnees-avec-mysql/1959969-installez-mysql
 
 Maintenant référrez vous au cours si vous rencontrer des difficultés car il nous faudra créer 5 tables dans notre base de données.
-(dont 2 qui ne sont pas encore fonctionnelles mais qui ne devrait pas tarder à l'être)
+
 
 Connecter vous et copier-coller ce bout de code qui devrait vous permettre d'obtenir la même base de données que moi.
 
