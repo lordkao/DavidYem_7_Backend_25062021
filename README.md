@@ -1,12 +1,12 @@
 ﻿# DavidYem_7_backend_25062021
 Bonjour et bienvenue dans ce projet qui est la réalisation de la partie Backend pour le projet Groupomania.
-Le but étant de créer une API permettant de gérer une base de donnée SQL.
+Le but étant de créer une API permettant de gérer une base de données SQL.
 
 Pour commencer,assurez-vous d'avoir installer sur votre machine Node.js.Si vous ne l'avez pas, pas de panique voici un lien pour le télécharger:
 /****************************************************************************/
 (https://nodejs.org/en/download/releases/)<== lien Node.js
 
-npm devrait s'installer automatiquement lorsque vous télécharger Node.js.(cela vous permettra de gérer vos dépendences.
+npm devrait s'installer automatiquement lorsque vous télécharger Node.js.(cela vous permettra de gérer vos dépendences).
 
 -Cloner ce repository sur votre machine.
 
@@ -21,6 +21,21 @@ Cela devrait installer plusieurs modules:
 -Crypto-js qui nous permettra içi de cacher les données personnelles des l'utilisateurs.
 
 -Dotenv qui nous permettra de stocker des clés ou autres donnée à masquer.
+Dans votre dossier racine du projet sur votre machine,il vous faudra créer un fichier '.env'.
+Celui-ci va nous permettre de gérer nos variables d'environnement qui contiendront les données sensibles.
+
+faites un copier/coller dans .env de ceci:
+(Remplacez les valeurs entre '< >' par vos propres informations)
+
+HOST='<localhost par default en local>'
+USER='<nom de l\'utilisateur avec lequel vous vous connecter>'
+PASSWORD='<client>'
+DATABASE='groupomania'
+TOKEN_LOGIN='RANDOM_TOKEN_SECRET'
+KEY_CRYPTOJS='000102030405060708090a0b0c0d0e0f'
+IV_CRYPTOJS='101112131415161718191a1b1c1d1e1f'
+ADMIN='mQp/48cBYhBFVsQpwe0aqYhYK/tUwRkP9NUGNZDLrEE='
+USERID_ADMIN='16255488235661am4i4dwskqrlsrnz'
 
 -Express qui va nous permettre de créer notre API afin d'intéragir avec la base de données et le front.
 
@@ -41,9 +56,9 @@ Si vous êtes tomber ici par hasard,je vous invite à visiter la partie Frontend
 
 (https://github.com/lordkao/DavidYem_7_Frontend_23062021.git)
 
-Si vous êtes arriver là,alors il est temps de créer notre mase de donné avec mysql.
-(Vous pouvez télécharger MYSQL à cet adresse: https://dev.mysql.com/downloads/mysql/#downloads)
-Puis suivez les instructions indiquées,si vous n'y arrivez pas suivez ce cours gratuit,il vous permettra d'utiliser MYSQL par la suite.
+Si vous êtes arriver là,alors il est temps de créer notre base de données avec mysql.
+(Vous pouvez télécharger MYSQL à cette adresse: https://dev.mysql.com/downloads/mysql/#downloads)
+Puis suivez les instructions indiquées,si vous n'y arrivez pas, suivez ce cours gratuit,il vous permettra d'utiliser MYSQL par la suite.
 
 ==>https://openclassrooms.com/fr/courses/1959476-administrez-vos-bases-de-donnees-avec-mysql/1959969-installez-mysql
 
@@ -52,7 +67,7 @@ Maintenant référrez vous au cours si vous rencontrer des difficultés car il n
 
 Connecter vous et copier-coller ce bout de code qui devrait vous permettre d'obtenir la même base de données que moi.
 
-Pour créer votre base de données : 
+Pour créer les tables dont nous aurons besoins : 
 
 -exécuter ces commandes :
 
