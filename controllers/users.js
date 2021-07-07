@@ -10,11 +10,16 @@ const key = cryptoJs.enc.Hex.parse(process.env.KEY_CRYPTOJS)
 const iv = cryptoJs.enc.Hex.parse(process.env.IV_CRYPTOJS)
 const mailAdmin = process.env.ADMIN
 const userIdAdmin = process.env.USERID_ADMIN
-/*Fonction qui crypt le mail renseigné*/
-function crypt(mail){
+
+function crypt(mail){/*Fonction qui crypt le mail renseigné*/
     const cryptMail = cryptoJs.AES.encrypt(mail,key,{ iv:iv }).toString()
     console.log(`mail crypté : ${cryptMail}`)
     return cryptMail
+}
+function decrypt(mail){/*Fonction qui decrypte le mail renseigné*/
+    const decryptMail = cryptoJs.AES.decrypt(mail,key,{ iv:iv })
+    const originalMail = decryptMail.toString(cryptoJs.enc.Utf8)
+    return originalMail
 }
 
 exports.signup = (req,res,next) => {/*Regex ok*/
@@ -103,11 +108,11 @@ exports.login = (req,res,next) => {/*Regex ok*/
     const db = database.connect()
     /*Sécurisation de l'email en le cryptant avc une key et un iv*/
     const mailToMatch = crypt(email)
-    /*Test pour la récuperation de l'email*/
+    /*Test pour la récuperation de l'email
     const decryptedMail = cryptoJs.AES.decrypt(mailToMatch,key,{ iv:iv })
     const originalMail = decryptedMail.toString(cryptoJs.enc.Utf8)
-    /*Console.log pour confirmer le décryptage du mal*/
-    console.log(`mail d'origine: ${originalMail}`)
+    Console.log pour confirmer le décryptage du mal
+    console.log(`mail d'origine: ${originalMail}`)*/
     const data = [mailToMatch]
 
     if((/^([\w.-]+)[@]{1}([\w]+)[.]{1}([a-z]){2,5}$/.test(email))===false){
@@ -277,10 +282,17 @@ exports.getInfosProfil = (req,res,next) => {/*Regex ok*/
         db.promise().query('SELECT * FROM users WHERE userId=?',userId)
         .then((results) => {
             const resultats = results[0][0]
+            const decryptedmail = decrypt(resultats.email)
+            console.log(`résultats : 
+            nom: ${resultats.nom}
+            prenom: ${resultats.prenom}
+            email: ${resultats.email}
+            urlImage: ${resultats.urlImage}
+            et le mail décrypté est : ${decryptedmail}`)
             const dataToSend = {
                 nom: resultats.nom,
                 prenom: resultats.prenom,
-                email: resultats.email,
+                email: decryptedmail,
                 urlImage: resultats.urlImage
             }
             console.log(dataToSend)
