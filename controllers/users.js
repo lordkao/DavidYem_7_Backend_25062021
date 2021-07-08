@@ -10,7 +10,8 @@ const key = cryptoJs.enc.Hex.parse(process.env.KEY_CRYPTOJS)
 const iv = cryptoJs.enc.Hex.parse(process.env.IV_CRYPTOJS)
 const mailAdmin = process.env.ADMIN
 const userIdAdmin = process.env.USERID_ADMIN
-
+const datedujour = new Date().getUTCHours()
+console.log(datedujour)
 function crypt(mail){/*Fonction qui crypt le mail renseigné*/
     const cryptMail = cryptoJs.AES.encrypt(mail,key,{ iv:iv }).toString()
     console.log(`mail crypté : ${cryptMail}`)

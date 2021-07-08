@@ -5,13 +5,17 @@ const fs = require('fs')
 exports.getAllPublications = (req,res,next) => {
     const db = database.connect()
     /*Obtention des 10 dernières publications*/
-    db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.id AS id,Publications.userId AS userId,Publications.message AS message,TIME(Publications.date) AS date,Publications.urlImage AS url FROM Users INNER JOIN publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10')
-    .then((responses) => {
-        return res.status(200).json(responses[0])
+    db.promise().query('SET lc_time_names = \'fr_FR\'')
+    .then(() => {
+        db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.id AS id,Publications.userId AS userId,Publications.message AS message,Publications.date AS original_date,DATE_FORMAT(Publications.date,\'le %W %e %M à %H:%i\') AS date,Publications.urlImage AS url FROM Users INNER JOIN publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10')
+        .then((responses) => {
+            return res.status(200).json(responses[0])
+        })
+        .catch((err) => {
+            return res.status(500).json(err)
+        })      
     })
-    .catch((err) => {
-        return res.status(500).json(err)
-    })
+    .catch((err) => res.status(500).json({err}))
     .then(() => db.end())
 }
 exports.getMorePublications = (req,res,next) => {/*Regex ok*/
