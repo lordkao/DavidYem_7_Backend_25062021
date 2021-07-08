@@ -198,13 +198,13 @@ exports.postLike = (req,res,next) => {/*Regex ok*/
     else if(like == 1){/*Like*/
         console.log('like = 1')
         db.promise().query('INSERT INTO Likes(publication,userId) VALUES(?,?)',[id,userId])
-        .then(() => res.status(200).json({message : 'Like mis à jour !'}))
+        .then(() => res.status(200).json({like : '1'}))
         .catch((err) => res.status(500).json(err))
     }
     else{/*Neutre*/
         console.log('like = 0')
         db.promise().query('DELETE FROM Likes WHERE userId = ? AND publication = ?',[userId,id])
-        .then(() => {res.status(200).json({ message : 'User neutre !'})})
+        .then(() => {res.status(200).json({ like : '0'})})
         .catch((err) => res.status(500).json(err))
         }   
 } 
@@ -225,24 +225,48 @@ exports.postDislike = (req,res,next) => {/*Regex ok*/
     else if(like == -1){/*Dislike*/
         console.log('like = -1')
         db.promise().query('INSERT INTO Dislikes(publication,userId) VALUES(?,?)',[id,userId])
-        .then(() => res.status(200).json({message : 'Dislike mis à jour !'}))
+        .then(() => res.status(200).json({like : '-1'}))
         .catch((err) => res.status(500).json(err))
     }
     else{/*Neutre*/
         console.log('like = 0')
         db.promise().query('DELETE FROM Dislikes WHERE userId = ? AND publication = ?',[userId,id])
-        .then(() => { res.status(200).json({ message : 'User neutre !'})})
+        .then(() => { res.status(200).json({ like : '0'})})
         .catch((err) => res.status(500).json(err))
     }   
 } 
 exports.getOneLike = (req,res,next) => {/*Regex ok*/
     const id = req.params.id
     const userId = req.params.userId
+    const data = [id,userId]
     if((/[\D]/.test(id))){/*Vérification de la valeur de Id*/
         res.status(400).json({ message :'Id invalide'})
     }
     else if((/([^a-zA-Z0-9@]+)/.test(userId))){/*Vérification de la valeur de userId*/
         res.status(400).json({ message :'format du UserId invalide'})
     }
-    res.status(200).json({message:'requête reçue !'})
+    else{
+        const db = database.connect()
+        db.promise().query('SELECT id FROM Likes WHERE publication = ? AND userId = ?',data)
+        .then((response) => {
+            console.log(response[0].length)
+            if (response[0].length == 1){
+                res.status(200).json({note:'1'})
+            }
+            else{
+                db.promise().query('SELECT id FROM Dislikes WHERE publication = ? AND userId = ?',data)
+                .then((result) => {
+                    console.log(result[0].length)
+                    if (result[0].length == 1){
+                        res.status(200).json({note:'-1'})
+                    }
+                    else{
+                        res.status(200).json({note:'0'})
+                    }
+                })
+                .catch((err) => res.status(500).json(err))
+            }
+        })
+        .catch((err) => res.status(500).json(err))
+    }
 } 
