@@ -268,5 +268,6 @@ exports.getOneLike = (req,res,next) => {/*Regex ok*/
             }
         })
         .catch((err) => res.status(500).json(err))
+        .then(()=>db.end())
     }
 } 
