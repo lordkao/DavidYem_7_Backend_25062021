@@ -25,24 +25,28 @@ exports.getMorePublications = (req,res,next) => {/*Regex ok*/
         res.status(400).json({ message :'offset invalide'})
     }
     else{
-        const requete = `SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.message AS message,Publications.urlImage AS url,Publications.userId AS userId,DATE_FORMAT(Publications.date,GET_FORMAT(DATETIME,\'EUR\')) AS date,Publications.id AS id FROM Users INNER JOIN Publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10 OFFSET ${offset}`
-        console.log(requete)
         const db = database.connect()
-        /*Obtention des 10 publications plus anciennes*/
-        db.promise().query(requete)
-        .then((response) => {
-            if(response[0].length == 0){
-                console.log(response[0].length)
-                res.status(404).json({ message : 'Il n\' y a plus d\'anciennes publications.'})
-            }
-            else{
-                res.status(200).json(response[0])
-            }
+        db.promise().query('SET lc_time_names = \'fr_FR\'')
+        .then(() => {
+            const requete = `SELECT Users.nom AS nom,Users.prenom AS prenom,Publications.message AS message,Publications.urlImage AS url,Publications.userId AS userId,Publications.date AS original_date,DATE_FORMAT(Publications.date,\'le %W %e %M à %H:%i\') AS date,Publications.id AS id FROM Users INNER JOIN Publications ON Users.userId = Publications.userId ORDER BY Publications.date DESC LIMIT 10 OFFSET ${offset}`
+            console.log(requete)
+            /*Obtention des 10 publications plus anciennes*/
+            db.promise().query(requete)
+            .then((response) => {
+                if(response[0].length == 0){
+                    console.log(response[0].length)
+                    res.status(404).json({ message : 'Il n\' y a plus d\'anciennes publications.'})
+                }
+                else{
+                    res.status(200).json(response[0])
+                }
+            })
+            .catch((err) => res.status(500).json(err))
+            .then(() => db.end())   
         })
-        .catch((err) => res.status(500).json(err))
-        .then(() => db.end())    
+        .catch((err) => res.status(500).json({err}))
+        .then(() => db.end())          
     }
-    
 }
 exports.createPublication = (req,res,next) => {/*Regex ok*/
     console.log(req.body.message)
