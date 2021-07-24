@@ -4,7 +4,9 @@ const database = require('../app.js')
 exports.getAllMessagesChat = (req,res,next) => {
     const db = database.connect()
     /*Obtention des messages du chat*/
-    db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'ISO\')) AS date,Chat.userId AS userId FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10')
+    db.promise().query('SET lc_time_names = \'fr_FR\'')
+    .then(() => {
+        db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.message AS message,DATE_FORMAT(Chat.date,\'le %W %e %M à %H:%i\') AS date,Chat.userId AS userId FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY Chat.date DESC LIMIT 10')
     .then((responses,fields) => {
         /*console.log(responses[0])*/
         const resultats = responses[0]
@@ -14,32 +16,36 @@ exports.getAllMessagesChat = (req,res,next) => {
        return res.status(500).json(err)
     })
     .then(() => db.end())
+    })
+    .catch((err) => res.status(500).json(err))
 }
 exports.getMoreMessages = (req,res,next) => {/*Regex ok*/
     const numberOfMessages = [req.params.numberOfMessages]
     /*Obtention de plus de messages à afficher sur le front grâce à la variable numberOfMessages*/
-    const string = `SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.userId AS userId,Chat.message AS message,DATE_FORMAT(Chat.date,GET_FORMAT(DATETIME,\'EUR\')) AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10 OFFSET ${numberOfMessages}`
+    const string = `SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.userId AS userId,Chat.message AS message,DATE_FORMAT(Chat.date,\'le %W %e %M à %H:%i\') AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10 OFFSET ${numberOfMessages}`
     const db = database.connect()
     if((/[\D]/.test(numberOfMessages))){/*Vérification de la valeur de offset*/
         res.status(400).json({ message :'offset invalide'})
     }
     else{
-        db.promise().query(string)
-        .then((response) => {
-            /*Si plus de messages plusanciens à afficher*/
-            if(response[0].length == 0){
-                console.log(response[0].length)
-                res.status(404).json({ message : 'Il n\' y a plus d\'anciens messages.'})
-            }
-            /*Sinon on afficher les 10 prochains messages*/
-            else{
-                console.log(numberOfMessages)
-                res.status(200).json(response[0])
-            }
+        db.promise().query('SET lc_time_names = \'fr_FR\'')
+        .then(() => {
+            db.promise().query(string)
+            .then((response) => {
+                if(response[0].length == 0){ /*Si plus de messages plus anciens à afficher*/
+                    console.log(response[0].length)
+                    res.status(404).json({ message : 'Il n\' y a plus d\'anciens messages.'})
+                }
+                else{/*Sinon on afficher les 10 prochains messages*/
+                    console.log(numberOfMessages)
+                    res.status(200).json(response[0])
+                }
+            })
+            .catch((err) => res.status(500).json(err))
+            .then(() => db.end())   
         })
         .catch((err) => res.status(500).json(err))
     }
-    
 }
 exports.createMessageChat = (req,res,next) => {/*Regex ok*/
     const date = new Date()
