@@ -6,7 +6,7 @@ exports.getAllMessagesChat = (req,res,next) => {
     /*Obtention des messages du chat*/
     db.promise().query('SET lc_time_names = \'fr_FR\'')
     .then(() => {
-        db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.message AS message,DATE_FORMAT(Chat.date,\'le %W %e %M à %H:%i\') AS date,Chat.userId AS userId FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10')
+        db.promise().query('SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.message AS message,DATE_FORMAT(Chat.date,\'le %W %e %M à %H:%i\') AS date,Chat.userId AS userId FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY Chat.date DESC LIMIT 10')
     .then((responses,fields) => {
         /*console.log(responses[0])*/
         const resultats = responses[0]
