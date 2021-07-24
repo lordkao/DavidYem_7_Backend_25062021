@@ -22,7 +22,7 @@ exports.getAllMessagesChat = (req,res,next) => {
 exports.getMoreMessages = (req,res,next) => {/*Regex ok*/
     const numberOfMessages = [req.params.numberOfMessages]
     /*Obtention de plus de messages à afficher sur le front grâce à la variable numberOfMessages*/
-    const string = `SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.userId AS userId,Chat.message AS message,DATE_FORMAT(Chat.date,\'le %W %e %M à %H:%i\') AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY date DESC LIMIT 10 OFFSET ${numberOfMessages}`
+    const string = `SELECT Users.nom AS nom,Users.prenom AS prenom,Chat.id AS id,Chat.userId AS userId,Chat.message AS message,DATE_FORMAT(Chat.date,\'le %W %e %M à %H:%i\') AS date FROM Users INNER JOIN Chat ON Users.userId = Chat.userId ORDER BY Chat.date DESC LIMIT 10 OFFSET ${numberOfMessages}`
     const db = database.connect()
     if((/[\D]/.test(numberOfMessages))){/*Vérification de la valeur de offset*/
         res.status(400).json({ message :'offset invalide'})
